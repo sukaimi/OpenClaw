@@ -1,0 +1,12 @@
+{
+  channels: {
+    msteams: {
+      welcomeCard: true,
+      promptStarters: [
+        "What can you do?",
+        "Start a project brief",
+        "How should I brief you?"
+      ]
+    }
+  }
+}

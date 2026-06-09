@@ -1,0 +1,55 @@
+############ FULL WELCOME CARD STRINGS (titles, body, suggested actions) ############
+"Help me draft an email"
+"I can help you with questions, tasks, and more. Here are some things to try:"
+"Summarize my last meeting"
+"What can you do?"
+"failed to send group welcome"
+"failed to send welcome card"
+"html attachment summary"
+"sent group welcome message"
+"sent welcome card"
+
+############ COMMAND MENU — telegram registered commands ############
+--- try command registry ---
+  Hint: commands suffixed with * have subcommands. Run <command> --help for details.
+  acp *                Run and manage ACP-backed coding agents
+  agent                Run one agent turn via the Gateway
+  agents *             Manage isolated agents (workspaces, auth, routing)
+  approvals *          Manage exec approvals (gateway or node host)
+  backup *             Create and verify local backup archives for OpenClaw
+  capability *         Run provider capability commands (fallback alias: infer)
+  channels *           Add, remove, login, and inspect messaging channels
+  chat                 Open a local terminal UI (alias for tui --local)
+  clawbot *            Legacy clawbot command aliases
+  commitments *        List and manage inferred follow-up commitments
+  completion           Generate shell completion script
+  config *             Non-interactive config helpers
+  configure            Interactive configuration for credentials, channels,
+  crestodian           Open the interactive setup and repair assistant
+  cron *               Schedule and inspect Gateway background jobs
+  daemon *             Manage the Gateway service (legacy alias)
+  dashboard            Open the Control UI with your current token
+  devices *            Device pairing + token management
+  directory *          Lookup contact and group IDs (self, peers, groups) for
+  dns *                DNS helpers for wide-area discovery (Tailscale + CoreDNS)
+  docs                 Search the live OpenClaw docs
+  doctor               Diagnose and repair config, Gateway, plugin, and channel
+  exec-policy *        Show or synchronize requested exec policy with host
+  gateway *            Run, inspect, and query the OpenClaw Gateway
+  health               Fetch detailed health from the running Gateway
+  help                 Display help for command
+  hooks *              Manage internal agent hooks
+  infer *              Run provider-backed model, media, search, and embedding
+  logs                 Tail Gateway logs locally or via RPC
+  mcp *                Manage OpenClaw MCP config and channel bridge
+  memory *             Search, inspect, and reindex memory files
+  message *            Send, read, and manage channel messages
+  migrate *            Import state from another agent system
+  models *             List, scan, and set model providers
+  node *               Run and manage the headless node host service
+  nodes *              Pair nodes and run node-host commands through the Gateway
+  onboard              Interactive onboarding for gateway, workspace, and skills
+  pairing *            Secure DM pairing (approve inbound requests)
+  plugins *            Install, enable, disable, and inspect plugins
+--- count ---
+70

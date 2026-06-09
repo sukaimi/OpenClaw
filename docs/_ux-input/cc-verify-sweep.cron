@@ -1,0 +1,2 @@
+# Code&Craft verify safety-net sweep (BL-012a) — auto-recover stalled client builds, every 20 min
+*/20 * * * * root /usr/local/bin/cc-verify-sweep >> /var/log/cc-verify-sweep.log 2>&1

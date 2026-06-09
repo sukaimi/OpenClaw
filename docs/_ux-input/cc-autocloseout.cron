@@ -1,0 +1,2 @@
+# Code&Craft auto wind-down of delivered jobs past grace window (BL-012b) — daily 03:45
+45 3 * * * root /usr/local/bin/cc-autocloseout >> /var/log/cc-autocloseout.log 2>&1

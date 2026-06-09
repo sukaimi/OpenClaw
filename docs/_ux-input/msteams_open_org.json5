@@ -1,0 +1,10 @@
+{
+  channels: {
+    msteams: {
+      dmPolicy: "open",
+      allowFrom: ["*"],
+      groupPolicy: "open",
+      groupAllowFrom: ["*"]
+    }
+  }
+}
