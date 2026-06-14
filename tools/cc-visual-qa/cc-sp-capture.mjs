@@ -16,6 +16,7 @@
 import { chromium } from "playwright";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { pageSignals } from "./sp-complexity.mjs";
 
 const argv = process.argv.slice(2);
 const has = (f) => argv.includes(f);
@@ -114,19 +115,13 @@ async function main() {
         seenInv.add(key);
         // complexity signals for triage (heuristic — used to FLAG pages, not perfectly classify)
         const invBody = it.WikiField || it.CanvasContent1 || it.PublishingPageContent || "";
-        const wpHits = invBody.match(/webPartData|data-sp-webpart|ms-rte-wpbox|WebPartZone|<webPart\b/gi);
-        const isPublishing = lib.title === "Pages" || !!it.PublishingPageContent;
-        const hasListWebpart = /XsltListViewWebPart|ListViewWebPart|ContentByQuery|CarouselWebPart|"isListLayout"|listId/i.test(invBody);
         inventoryAll.push({
           title:    it.Title || nm.slice(0, -5),
           file:     nm,
           lib:      lib.title,
           modified: it.Modified || "",
           created:  it.Created  || "",
-          bytes:    invBody.length,
-          webPartCount: wpHits ? wpHits.length : 0,
-          isPublishing,
-          hasListWebpart,
+          ...pageSignals(invBody, lib.title, it.PublishingPageContent),
         });
       }
       // Apply ONLY filter and de-dup for body capture
