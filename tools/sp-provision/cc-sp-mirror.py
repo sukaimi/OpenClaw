@@ -39,10 +39,42 @@ IMAGE-MAP COMPLETENESS (folds prior task #5):
                      image-map.json (its _merge_image_map step) — closes the old home2/ gap where
                      homepage migrations were not recorded.
   After both run, the driver asserts image-map.json exists and is non-empty before the gate stage.
+
+SUBSITES (JOB0024-109 sub-task 4 — OFF by default, additive):
+  A classic source site may NEST subsites (webs); each is its own page/list/nav surface and must
+  NOT be merged into the parent. cc_sp_subsites.py enumerates a captured webinfos.json and fans out
+  ONE child job descriptor per subsite. This is intentionally NOT wired into the single-site stage
+  plan above — it is an OPT-IN pre-step (see maybe_fan_out_subsites() below), so existing single-site
+  runs are completely unchanged. Live nested-web AUTH + target naming/nav stitching need a reference
+  multi-web site to finish; the enumeration/fan-out LOGIC is implemented + unit-tested repo-only.
 """
 
 import sys, os, json, argparse, shlex, subprocess, datetime
 from urllib.parse import urlparse
+
+
+# ---- OPT-IN subsite fan-out (JOB0024-109 sub-task 4) — additive, OFF by default ----
+# Not called anywhere in the default single-site flow; provided so an operator can, given a
+# captured <jobDir>/webinfos.json, compute the per-subsite child-job plan WITHOUT changing any
+# existing behaviour. Returns descriptors only — this helper itself writes NOTHING.
+def maybe_fan_out_subsites(cfg, webinfos_path=None, target_template="{parent}-{slug}"):
+    """OFF-by-default. If `webinfos_path` (a captured /_api/web/webinfos JSON) is provided and
+    exists, return the list of child job descriptors for the subsites under cfg['sourceUrl'].
+    Default path is <jobDir>/webinfos.json; when absent, returns [] (no-op). PURE: no writes.
+
+    # TODO(JOB0024-109 subsites): wiring this as an actual pipeline stage (and persisting the
+    # child descriptors / dispatching child jobs) needs a live reference nested site to validate
+    # nested-web auth reach + target-name provisioning + parent<->child nav stitching."""
+    import importlib.util
+    path = webinfos_path or os.path.join(cfg.get("jobDir", ""), "webinfos.json")
+    if not path or not os.path.exists(path):
+        return []
+    spec = importlib.util.spec_from_file_location(
+        "cc_sp_subsites", os.path.join(MAC_QA, "cc_sp_subsites.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    subs = mod.enumerate_subsites(json.load(open(path)))
+    return mod.fan_out(cfg, subs, target_template)
 
 # ---- where the reused scripts live (no per-site values; pure tool locations) ----
 SERVER = "root@76.13.179.220"

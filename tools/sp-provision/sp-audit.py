@@ -327,6 +327,192 @@ def segment_content(raw_html):
     return blocks
 
 
+# --------------------------------------------------------------------------- #
+# PUBLISHING-LAYOUT extraction (JOB0024-109, sub-task 1)
+# Classic publishing pages keep their body in PublishingPageContent (the `Pages`
+# library), NOT WikiField/CanvasContent1. The body is a set of field controls
+# wrapped in page-layout / PublishingWebControls chrome — e.g.
+#   <div ...RichHtmlField...><div class="ms-rtestate-field">...real copy...</div></div>
+#   <div ...SummaryLinkFieldControl...>...links...</div>
+# We strip the field-control / page-layout wrappers (verbatim INNER html survives,
+# images preserved) and emit ORDERED content[] blocks keyed "pub-field"/"section"
+# so a publishing page flows through the SAME verbatim composer + completeness gate
+# as an article page. Order is preserved so copy_coverage() stays meaningful.
+# Config-driven chrome list — no client-specific hardcoding.
+# --------------------------------------------------------------------------- #
+# field-control / page-layout wrapper class tokens to UNWRAP (chrome -> drop the
+# wrapper tag, keep its inner content). Matched case-insensitively on the wrapper's
+# class attribute. Extend via config (sp.config "publishingChromeTokens") if a tenant
+# uses non-default layouts.
+_PUB_CHROME_TOKENS = (
+    "PublishingWebControls", "ms-rtestate-field", "RichHtmlField",
+    "RichImageField", "PublishingImageField", "SummaryLinkFieldControl",
+    "publishingPageContent", "ms-rteThemeBackColor",
+)
+# A publishing field region: the outer field-control wrapper. We split the body into
+# ordered top-level field regions on these markers so each becomes one block.
+_PUB_FIELD = re.compile(
+    r'(?is)<div\b[^>]*\bclass\s*=\s*["\'][^"\']*'
+    r'(?:RichHtmlField|RichImageField|PublishingImageField|SummaryLinkFieldControl|'
+    r'ms-rtestate-field|PublishingWebControls)[^"\']*["\'][^>]*>')
+
+
+def _strip_pub_chrome(html_in):
+    """Remove field-control / page-layout WRAPPER <div>/<span> tags whose class
+    carries a known chrome token, keeping their inner content verbatim. Other tags
+    (incl. <img>) are untouched. A lightweight, order-preserving unwrap — not a full
+    HTML parser, but classic publishing chrome is shallow and regular."""
+    if not html_in:
+        return ""
+    tokens = "|".join(re.escape(t) for t in _PUB_CHROME_TOKENS)
+    # drop opening wrapper tags whose class matches a chrome token; the matching
+    # close tag is dropped generically below (we can't pair without a parser, so we
+    # only remove the OPEN chrome tag and let _clean_html collapse the leftover close)
+    pat = re.compile(r'(?is)<(div|span)\b[^>]*\bclass\s*=\s*["\'][^"\']*'
+                     r'(?:%s)[^"\']*["\'][^>]*>' % tokens)
+    return pat.sub("", html_in)
+
+
+def _is_publishing_html(raw_html):
+    """Structural signal that a page body is classic PublishingPageContent: it carries
+    a publishing field-control wrapper. Used to route the page to _publishing_blocks
+    when the source `lib`/kind isn't otherwise threaded through (e.g. network reads)."""
+    return bool(raw_html) and bool(_PUB_FIELD.search(raw_html))
+
+
+def _publishing_blocks(raw_html):
+    """Split a PublishingPageContent body into ORDERED verbatim content[] blocks.
+    Each top-level field region becomes a block: kind 'pub-field' (a rich-text/image
+    field region) — or, when a region carries its own <h1-3> heading, that heading's
+    text is preserved and sub-headed regions key 'section' (so heading-driven copy
+    coverage and the composer's main-column rendering both work). Reuses the existing
+    _IMG / _block_html-compatible shape ({kind,heading,text,html,images[],items[]})
+    so it flows through the SAME composer + gate as article pages. Order preserved."""
+    if not raw_html:
+        return []
+    # ordered field-region boundaries; if the layout has no recognizable field
+    # wrapper, fall back to heading segmentation (segment_content) so we never lose copy.
+    bounds = [m.start() for m in _PUB_FIELD.finditer(raw_html)]
+    if not bounds:
+        # no field wrappers — treat the whole stripped body as heading-segmented
+        # content, but key every produced block as pub-field/section for clarity.
+        stripped = _strip_pub_chrome(raw_html)
+        blocks = segment_content(stripped)
+        for b in blocks:
+            if b.get("kind") in ("intro", "section"):
+                b["kind"] = "pub-field" if not b.get("heading") else "section"
+        return blocks
+    bounds.append(len(raw_html))
+    blocks = []
+    for i in range(len(bounds) - 1):
+        region = raw_html[bounds[i]:bounds[i + 1]]
+        inner = _strip_pub_chrome(region)
+        if not (_text(inner) or extract_images(inner)):
+            continue
+        # a region with its own real heading -> keep heading + key 'section';
+        # otherwise it's a plain field region -> 'pub-field'.
+        heads = _find_heads(inner)
+        heading = heads[0][2] if heads else ""
+        kind = "section" if heading else "pub-field"
+        blocks.append({
+            "kind": kind,
+            "heading": heading,
+            "text": _text(inner),
+            "html": _clean_html(inner),
+            "images": extract_images(inner),
+            "items": _split_items(inner),
+        })
+    return blocks
+
+
+# --------------------------------------------------------------------------- #
+# LIST-VIEW snapshot (JOB0024-109, sub-task 2)
+# An XsltListViewWebPart / ContentByQuery web part renders a LIVE query against a
+# SharePoint list. On a read-only classic SOURCE we cannot re-bind that query on
+# the modern build (no write access to the source list, and the modern Graph
+# list/CBQ web parts need a reference site to point at). So we capture a STATIC
+# SNAPSHOT of the list's items AT AUDIT TIME and emit it as ONE ordered content[]
+# block of kind 'listview'. A LINK list (items carry an href) becomes a quicklinks
+# -style block (verbatim <a> items); a DATA list (no links) becomes a simple
+# text/table block. Either way every item title + href lands in the block's html
+# so it flows through the SAME composer + copy_coverage as every other block.
+# Live dynamic re-binding stays DEFERRED — flagged below.
+# --------------------------------------------------------------------------- #
+def _fetch_list_items(sid, list_name):  # pragma: no cover
+    """STUB — live Graph list fetch. NOT wired: we make NO live calls in this rail.
+    The real implementation would GET /sites/{sid}/lists/{list_name}/items?$expand=
+    fields and normalise each row to {title, href, fields{}}; it needs a reference
+    site to validate field selection + a true dynamic binding story.
+    # TODO(JOB0024-109): live list fetch needs a reference site
+    Until then, callers pass a pre-parsed items[] array (capture/synthetic)."""
+    raise NotImplementedError(
+        "live list fetch deferred — pass a parsed items[] array "
+        "(TODO(JOB0024-109): needs a reference site)")
+
+
+def _listview_blocks(items, kind_hint=""):
+    """Turn a parsed list-items array into ONE ordered content[] block of kind
+    'listview'. `items` = [{title, href?, text?}] in the source list's view order.
+    `kind_hint` ('links'|'data'|'') lets the caller force a rendering; otherwise we
+    infer: if ANY item carries an href -> a link list (quicklinks-style <ul><li><a>);
+    else a data list (simple <ul><li> text rows). Title + href of EVERY item is
+    placed verbatim in the block's html so copy_coverage() stays meaningful and the
+    composer renders it like any other MAIN block. Returns [] for an empty list."""
+    items = [it for it in (items or []) if (it.get("title") or it.get("text"))]
+    if not items:
+        return []
+    is_links = (kind_hint == "links") or (
+        kind_hint != "data" and any((it.get("href") or "").strip() for it in items))
+    heading = (kind_hint and kind_hint.title()) or ""
+    rows = []
+    for it in items:
+        title = (it.get("title") or it.get("text") or "").strip()
+        href = (it.get("href") or "").strip()
+        label = esc_text(title)
+        if is_links and href:
+            # the href is rendered BOTH as the anchor target AND as visible text
+            # (a small trailing url) so the link survives the gate's tag-stripping
+            # copy_coverage — every title AND href round-trips verbatim.
+            rows.append('<li><a href="%s">%s</a> %s</li>'
+                        % (html.escape(href, quote=True), label, esc_text(href)))
+        else:
+            extra = it.get("text")
+            if extra and extra.strip() and extra.strip() != title:
+                rows.append("<li>%s &mdash; %s</li>" % (label, esc_text(extra.strip())))
+            else:
+                rows.append("<li>%s</li>" % label)
+    body = "<ul>\n%s\n</ul>" % "\n".join(rows)
+    # `text` is the verbatim copy the gate scores: every item's title, its href
+    # (link lists), and its extra data text (data lists). Mirrors exactly what the
+    # html above renders, so copy_coverage stays meaningful over the whole snapshot.
+    parts = []
+    for it in items:
+        title = (it.get("title") or it.get("text") or "").strip()
+        parts.append(title)
+        if is_links and (it.get("href") or "").strip():
+            parts.append(it["href"].strip())
+        else:
+            extra = (it.get("text") or "").strip()
+            if extra and extra != title:
+                parts.append(extra)
+    text = " ".join(p for p in parts if p).strip()
+    return [{
+        "kind": "listview",
+        "heading": heading,
+        "text": text,
+        "html": body,
+        "images": [],
+        "items": [],
+    }]
+
+
+def esc_text(s):
+    """Minimal HTML-escape for verbatim list-item text (the composer's text web
+    part renders html; titles must not break it)."""
+    return (html.unescape(s or "")
+            .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+
+
 def read_modern_pages(sid):
     """Return [(name,title,text,raw_html)] for MODERN site pages (may be empty for a
     classic source). raw_html is the canvasLayout JSON blob, scanned for innerHtml <img>."""
@@ -757,7 +943,14 @@ def main():
         total_imgs += len(images)
         # VERBATIM content: ordered structured blocks carrying the EXACT source copy.
         # This is the fidelity source the build composes 1:1 and the gate scores.
-        content = segment_content(raw_html)
+        # Publishing pages (PublishingPageContent / `Pages` lib) carry their body in
+        # classic field-control chrome — route them through _publishing_blocks, which
+        # strips the chrome and emits the SAME content[] shape (pub-field/section) so
+        # they flow through the SAME composer + completeness gate as article pages.
+        if _is_publishing_html(raw_html):
+            content = _publishing_blocks(raw_html)
+        else:
+            content = segment_content(raw_html)
         full_text = _text(raw_html)
         # markers anchor the gate; derive them from the VERBATIM per-block content so
         # each is a phrase that truly exists in the source (no cross-column gluing).

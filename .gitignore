@@ -38,3 +38,5 @@ backups/
 tools/cc-visual-qa/capture-*/
 tools/cc-visual-qa/rdq-home-manifest.json
 ccgate-canvas-*/
+tools/sp-provision/__pycache__/
+tools/sp-provision/tests/__pycache__/

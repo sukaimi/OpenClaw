@@ -407,8 +407,77 @@ def copy_coverage(source_text, build_html):
 # Events/Documents -> sidebar, Welcome/CEO/intro -> hero+main, by the source's
 # OWN structure. No filler, no paraphrase, no cross-contamination.
 # --------------------------------------------------------------------------- #
-MAIN_KINDS = {"welcome", "section"}
+# "pub-field" = a classic publishing field-control region (rich-text body / image
+# field), extracted verbatim by sp-audit's _publishing_blocks. It renders in the
+# MAIN column exactly like a "section" so a publishing page flows through the SAME
+# composer + completeness gate as an article page (JOB0024-109).
+# "listview" = a STATIC SNAPSHOT of a classic XsltListViewWebPart / ContentByQuery
+# list, extracted verbatim by sp-audit's _listview_blocks (JOB0024-109). A link
+# list renders as a verbatim <ul> of <a> items, a data list as a verbatim <ul> of
+# text rows — both flow through the MAIN column exactly like a "section" so a
+# list-driven page goes through the SAME composer + completeness gate.
+MAIN_KINDS = {"welcome", "section", "pub-field", "listview"}
 SIDEBAR_KINDS = {"quicklinks", "contacts", "events", "documents", "brands"}
+
+# JOB0024-109 sub-task 3: classic HomeTiles (a grid of image+label+link tiles) and a
+# classic banner (one large image + title + tagline + link) have NATIVE modern
+# equivalents — Quick Links and Hero — so they flip flag->buildable. (CarouselWebPart
+# does NOT: its modern equivalent needs an SPFx web part whose source is missing +
+# toolchain broken, so a carousel page STAYS flagged 'carousel-spfx' upstream in
+# triage; the composer never receives a 'carousel' block.)
+_TILE_A = re.compile(
+    r'<a\b[^>]*href\s*=\s*["\']([^"\']*)["\'][^>]*>(.*?)</a>', re.I | re.S)
+
+
+def _tile_items(block):
+    """Extract ordered {title,url} tiles from a HomeTiles block. Prefers the block's
+    parsed items[] (each {title,url|href}); else parses the block html's <a> tags
+    (the tile label is the anchor's text with any nested <img> stripped). Verbatim —
+    every tile's label + link round-trips."""
+    out = []
+    for it in (block.get("items") or []):
+        title = (it.get("title") or it.get("text") or "").strip()
+        url = (it.get("url") or it.get("href") or "").strip()
+        if title:
+            out.append({"title": title, "url": url})
+    if out:
+        return out
+    html_src = block.get("html") or ""
+    for m in _TILE_A.finditer(html_src):
+        url = (m.group(1) or "").strip()
+        label = re.sub(r"<[^>]+>", " ", m.group(2) or "")
+        label = re.sub(r"\s+", " ", label).strip()
+        if label:
+            out.append({"title": label, "url": "" if url in ("#", "") else url})
+    return out
+
+
+def tiles_from_blocks(block, heading=""):
+    """Map a classic HomeTiles block (image+label+link tiles) to a NATIVE Quick Links
+    web part. Returns a quicklinks_wp web part (its titles+urls live in
+    serverProcessedContent, which the fidelity gate folds in), or None if no tile has
+    a label. <=8 tiles (Quick Links cap); overflow tiles are appended verbatim as a
+    text web part by the caller's section so nothing is dropped."""
+    items = _tile_items(block)
+    if not items:
+        return None
+    heading = heading or (block.get("heading") or "").strip() or "Quick links"
+    return quicklinks_wp(items[:8], heading=heading)
+
+
+def banner_from_blocks(block, image_map, site_id=""):
+    """Map a classic banner block (one large image + title + tagline + link) to a
+    NATIVE Hero web part. title (the banner heading) + tagline (its copy) land verbatim
+    in serverProcessedContent; the banner image becomes the hero background. Returns a
+    hero_wp web part."""
+    title = (block.get("heading") or block.get("title") or "").strip()
+    tagline = (block.get("text") or block.get("tagline") or "").strip()
+    link_url = (block.get("url") or block.get("link") or "").strip()
+    img = _img_for(block, image_map)
+    image_url = img["url"] if img else ""
+    if not title and tagline:
+        title, tagline = tagline, ""
+    return hero_wp(title, tagline=tagline, image_url=image_url, link_url=link_url)
 
 
 def _block_html(block):
@@ -459,20 +528,48 @@ def build_canvas_from_content(page_spec, image_map, site_id):
     main_blocks = [b for b in content
                    if b.get("kind") in MAIN_KINDS and b is not intro]
     side_blocks = [b for b in content if b.get("kind") in SIDEBAR_KINDS]
+    # JOB0024-109/3: classic HomeTiles / banner blocks -> native Quick Links / Hero.
+    banner_blocks = [b for b in content if b.get("kind") == "banner"]
+    tiles_blocks = [b for b in content if b.get("kind") == "tiles"]
 
     sections = []
 
-    # 1) HERO — full-width: intro image + intro copy (the banner text, verbatim)
-    hero_img = _img_for(intro, image_map) if intro else None
-    hero_col = []
-    if hero_img:
-        hero_col.append(image_wp(hero_img["url"], hero_img["alt"], site_id))
-    # page title as the hero <h1> (so the title marker has a home), then the
-    # source's own intro/banner copy verbatim beneath it.
-    title = esc(page_spec.get("title", "") or "")
-    intro_html = _block_html(intro) if intro else ""
-    hero_col.append(text_wp(("<h1>%s</h1>\n%s" % (title, intro_html)).strip()))
-    sections.append(section("oneColumn", [hero_col], emphasis="neutral", sid="1"))
+    # 1) HERO — full-width. A classic 'banner' block renders as a NATIVE Hero web part
+    #    (image background + verbatim title/tagline). Otherwise the intro image + intro
+    #    copy lead the page exactly as before.
+    if banner_blocks:
+        sections.append(section(
+            "oneColumn",
+            [[banner_from_blocks(banner_blocks[0], image_map, site_id)]],
+            emphasis="neutral", sid="1"))
+    else:
+        hero_img = _img_for(intro, image_map) if intro else None
+        hero_col = []
+        if hero_img:
+            hero_col.append(image_wp(hero_img["url"], hero_img["alt"], site_id))
+        # page title as the hero <h1> (so the title marker has a home), then the
+        # source's own intro/banner copy verbatim beneath it.
+        title = esc(page_spec.get("title", "") or "")
+        intro_html = _block_html(intro) if intro else ""
+        hero_col.append(text_wp(("<h1>%s</h1>\n%s" % (title, intro_html)).strip()))
+        sections.append(section("oneColumn", [hero_col], emphasis="neutral", sid="1"))
+
+    # 1b) TILES — classic HomeTiles grid -> a NATIVE Quick Links web part (one tile per
+    #     link, label+url verbatim). >8 tiles overflow into a verbatim text web part so
+    #     no tile is dropped (quicklinks_wp caps at 8). Carousel is NEVER here (flagged
+    #     'carousel-spfx' in triage; SPFx-blocked).
+    for tb in tiles_blocks:
+        tiles_wp = tiles_from_blocks(tb)
+        if not tiles_wp:
+            continue
+        col = [tiles_wp]
+        overflow = _tile_items(tb)[8:]
+        if overflow:
+            extra = "".join('<li><a href="%s">%s</a> %s</li>'
+                            % (esc(it["url"]), esc(it["title"]), esc(it["url"]))
+                            for it in overflow)
+            col.append(text_wp("<ul>%s</ul>" % extra))
+        sections.append(section("oneColumn", [col], emphasis="none", sid="tiles"))
 
     # 2) MAIN (8) + SIDEBAR (4). Main = Welcome/CEO/other body blocks, verbatim.
     #    The CEO portrait (image inside the welcome block) renders as a native
@@ -712,6 +809,28 @@ def _build_col_webparts(col, ctx):
                 % (overflow, col.get("limit", 8)))
         heading = col.get("heading") or "Quick links"
         wps.append(quicklinks_wp(items, heading=heading))
+
+    elif kind == "listview":
+        # STATIC list-view snapshot (JOB0024-109). Pull the verbatim 'listview'
+        # content block (by name or kind) and render it: a LINK list goes through
+        # the native Quick Links web part (titles+urls carried in serverProcessedContent,
+        # which the gate folds in); a DATA list (no <a> tags) stays a verbatim text
+        # web part. Either way every item title/href round-trips.
+        b = content_by_kind.get(col.get("fromBlock", "listview"))
+        if b:
+            items, overflow = _links_from_block(b, col.get("limit", 8))
+            has_links = any((it.get("url") or "").strip() for it in items)
+            if has_links:
+                if overflow:
+                    ctx["notes"].append(
+                        "listview: %d link(s) over the %d cap rendered as text overflow"
+                        % (overflow, col.get("limit", 8)))
+                wps.append(quicklinks_wp(items, heading=col.get("heading")
+                                         or b.get("heading") or "Quick links"))
+                if overflow:  # keep the overflow links verbatim in a text wp (gate)
+                    wps.append(text_wp(_block_html(b)))
+            else:
+                wps.append(text_wp(_block_html(b)))
 
     elif kind == "image":
         # Support both nested {"image": {"src": ...}} and flat {"src": ..., "type": "image"}
