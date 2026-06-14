@@ -63,8 +63,14 @@ Status: ⬜ todo · 🔨 doing · ✅ done
 - ✅ **B1** `cc_sp_triage.py --approve [--all-buildable]` → `scope-approved.json`. **Tested** ✓.
 - ⬜ **B2** build refuses un-approved pages — DEFERRED to orchestrator pass.
 
-### ⭐ REMAINING: ORCHESTRATOR-INTEGRATION PASS (covers E2 + B2 + C2 together)
-One coherent edit to `cc-sp-mirror.py` (+ `cc_sp_build.py`): insert **triage** stage after capture; **scope-gate** (refuse if no `scope-approved.json` / skip un-approved) before compose; turn compose's blunt `buildCap` into a **worklist/wave** loop (build next `waveSize` pending, mark done/failed, set `CC_SP_BACKUP_DIR`); run **rollup** at closeout. Then deploy + dry-run. (Kept as ONE pass to avoid editing the live driver 3×.)
+### ✅ ORCHESTRATOR-INTEGRATION PASS — DONE (covers C2 + B2 + D-env + E2 pointer)
+Wired into `cc_sp_build.py` (the server harness path), **backward-compatible** (legacy behaviour when no worklist/approval):
+- ✅ **C2 waves** — `worklist.json` present → build next `waveSize` pending pages, `_mark_worklist` done/failed (resumable). Unit-tested.
+- ✅ **B2 scope-gate** — skips pages not in `scope-approved.json` (logged). Unit-tested.
+- ✅ **D-env** — sets `CC_SP_BACKUP_DIR=<jd>/backups` so compose snapshots before overwrite.
+- ✅ triage auto-run — emits informational `scope-sheet.json` when an inventory is present.
+- ✅ **E2** — rollup runs STANDALONE after the close-gate (`cc-sp-rollup.mjs <jd>`); cc_sp_build's final message points to it. (Not wired into cc-sp-mirror — the Mac orchestrator is the operator-full-run path; the server harness + standalone tools are the guardrail path. cc-sp-mirror wiring = optional later.)
+Deployed + compiles on server. **ALL BUILD WORK DONE — only Phase F (live calibration) remains.**
 
 ### Phase F — Calibrate + prove (own-tenant)
 - ⬜ **F1** pick/seed own-tenant multi-page site w/ known good + known-unbuildable pages.
@@ -76,4 +82,6 @@ One coherent edit to `cc-sp-mirror.py` (+ `cc_sp_build.py`): insert **triage** s
 3. Flag-only boundary (rebuild = 109) — assumed agreed.
 
 ## CURRENT STATUS (update as we go)
-**2026-06-14:** plan locked, order A→E→C→D→B→F. **All STANDALONE tools built + unit-tested + deployed:** A1 inventory-enrich ✓, A2 triage ✓, B1 approve ✓, C1 worklist ✓, D1 backup ✓, D2 restore ✓, E1 rollup ✓ (all tested on synthetic data; D1/D2 live test pending at F). Committed on branch `job0024-guardrails`. **NEXT = the orchestrator-integration pass** (wire triage/scope-gate/waves/rollup into `cc-sp-mirror.py`+`cc_sp_build.py` = E2+B2+C2), then **Phase F** calibration (needs the own-tenant calibration-site decision). No code has touched any client tenant.
+**2026-06-14:** ✅ **ALL BUILD WORK DONE** — A1 inventory-enrich, A2 triage, B1 approve, C1 worklist, D1 backup, D2 restore, E1 rollup, + orchestrator integration (C2 waves / B2 scope-gate / D-env / E2 pointer) all built, unit-tested on synthetic data, deployed to server, and committed on branch `job0024-guardrails` (3 commits). Backward-compatible (legacy build path unchanged). **ONLY Phase F (live calibration) remains.**
+
+**Phase F nuance discovered (decision needed):** a seeded own-tenant site CANNOT exercise every path live — `Modified` dates can't be backdated (archive path) and classic publishing infra can't be created in modern SPO (publishing-layout flag). What IS live-testable on an own-tenant site: buildable+gate-PASS, heavy-media flag, list-web-part flag (if the regex fires), gate-FAIL, waves+resume, backup→restore, scope-gate, rollup. Archive + publishing flags stay synthetic-validated (A2) — justify with a regex unit-test against representative body samples. **Proposed F:** seed a small own-tenant site (~4 pages: simple / heavy / list-part / deliberately-incomplete) + capture→triage→approve→worklist→build(2 waves)→backup→restore→gate→rollup. Awaiting go (provisioning a site in the tenant = confirm first).
