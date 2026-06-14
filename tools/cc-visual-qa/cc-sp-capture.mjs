@@ -16,6 +16,7 @@
 import { chromium } from "playwright";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { pageSignals } from "./sp-complexity.mjs";
 
 const argv = process.argv.slice(2);
 const has = (f) => argv.includes(f);
@@ -112,12 +113,15 @@ async function main() {
       // Collect into full inventory (de-dup by filename)
       if (!seenInv.has(key)) {
         seenInv.add(key);
+        // complexity signals for triage (heuristic — used to FLAG pages, not perfectly classify)
+        const invBody = it.WikiField || it.CanvasContent1 || it.PublishingPageContent || "";
         inventoryAll.push({
           title:    it.Title || nm.slice(0, -5),
           file:     nm,
           lib:      lib.title,
           modified: it.Modified || "",
           created:  it.Created  || "",
+          ...pageSignals(invBody, lib.title, it.PublishingPageContent),
         });
       }
       // Apply ONLY filter and de-dup for body capture
