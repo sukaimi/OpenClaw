@@ -6,7 +6,7 @@ Single source of truth for **feature/platform builds** (NOT client jobs — thos
 
 Tiers: **P0 now · P1 next · P2 soon · P3 later · Done**
 
-_Last updated: 2026-06-07_
+_Last updated: 2026-06-14 — SharePoint builder hardening + first end-to-end run DONE (Phases A–C codified + proven live on RDQ JOB0023; Level 2 closed at proof-of-capability). JOB0017 CLOSED. JOB0019 (immersive builder): #95 decided — build LOCALLY first, harness into O/C later. (Prior 2026-06-11 pivot: focus back to the SP builder; web/EDM deprioritised, BL-005/016/007 → P3.)_
 
 ---
 
@@ -14,13 +14,22 @@ _Last updated: 2026-06-07_
 _(clear)_
 
 ## P1 — next
-- **BL-005 · Stripe LIVE activation** is the SOLE hard launch gate (held by Sukaimi "until everything is good"). Tally form = Sukaimi marked DONE (optional: verify 3 pricing cases). See P2 for DKIM (downgraded — not a hard blocker).
+- **JOB0019 · Immersive site builder** — #95 DECIDED 2026-06-14: build **LOCALLY first**, integrate/harness into O/C later. Unblocked (pending build-scope confirmation). Consumes the 12×12 themes/layouts library (JOB0017, now closed).
+- **SP production-hardening forward backlog** (deferred until a real paying client lands — see memory `project_sp_level2_access_model`): (1) Verify-at-intake automation (operator-assisted first; client self-serve + delegated-OAuth = upgrade); (2) client-tenant redeploy (PnP extract→apply); (3) content-type coverage (publishing layouts / list-driven web parts / subsites); (4) large-site triage + scale guardrails.
+
+## Done
+- **SharePoint builder hardening + first end-to-end run** ✅ DONE 2026-06-14 (pivot 2026-06-11 → delivered). SP classic→modern pipeline codified + wired into O/C (Phases A–C: 3 reliability gates + `cc-sp-mirror` driver + `cc-verify-sp` deterministic close-gate) and **proven live on RDQ (JOB0023)** — 4 gate-verified deliverables (Home + 3 articles), copy fidelity 1.00. **Level 2 closed at proof-of-capability.** Memory: `project_sp_pipeline_codification`, `project_sp_level2_access_model`.
+- **JOB0017 · 12×12 themes/layouts library** ✅ CLOSED (all cards) — feeds JOB0019; the SP builder does NOT use it.
 
 ## P2 — soon
-- **BL-016 · Email deliverability (M365 DKIM for codeandcraft.ai)** — _downgraded 2026-06-08 (Sukaimi: not a hard blocker — mail still delivers; only strict M365 receivers quarantined). DNS is DONE + verified; finishing = the one Defender toggle whenever Microsoft's cache clears, no rush._ — client deliveries from `hello@codeandcraft.ai` (via Graph) currently pass **SPF** but have **no M365 DKIM** (`selector1/2._domainkey` absent) and DMARC `p=none`. New-domain + zip attachment + link → lands in **Junk/Quarantine** at strict receivers (surfaced by JOB0010 to a nowthatsfresh.com M365 mailbox — accepted, no bounce, but not in inbox). Affects EVERY client delivery → **pre-launch blocker.** Fix: add the 2 DKIM selector CNAMEs (Hostinger API) + enable DKIM signing in M365 Defender (user admin action); consider DMARC `p=quarantine` later + a sender-reputation warm-up. _status (2026-06-08): **DKIM CNAMEs CORRECTED to M365's exact values + live on authoritative NS** — selector1/2._domainkey → `...codeandcanvas.n-v1.dkim.mail.microsoft` (NOT the old `.onmicrosoft.com` format; Defender's error gave the exact targets). Gotchas: M365 now uses the newer `n-v1.dkim.mail.microsoft` DKIM target; Hostinger `overwrite:false` CONFLICTS (422) on an existing record — must DELETE+add to UPDATE. **PENDING: Sukaimi retries the Defender DKIM toggle after DNS cache clears (~15-60 min)** → then re-test deliverability. DMARC p=quarantine = later._
-- **BL-007 · EDM build path depth** — web rail is solid; the EDM build path is basic. _status: not started._
+_(SP-rail items land here as the hardening run surfaces them)_
 
-## P3 — later
+## P3 — later (web/EDM rail — deprioritised 2026-06-11)
+- **BL-005 · Stripe LIVE activation** — was the sole web-funnel launch gate; deferred with the whole web/EDM rail.
+- **BL-016 · Email deliverability (M365 DKIM for codeandcraft.ai)** — _downgraded 2026-06-08 (Sukaimi: not a hard blocker — mail still delivers; only strict M365 receivers quarantined). DNS is DONE + verified; finishing = the one Defender toggle whenever Microsoft's cache clears, no rush._ — client deliveries from `hello@codeandcraft.ai` (via Graph) currently pass **SPF** but have **no M365 DKIM** (`selector1/2._domainkey` absent) and DMARC `p=none`. New-domain + zip attachment + link → lands in **Junk/Quarantine** at strict receivers (surfaced by JOB0010 to a nowthatsfresh.com M365 mailbox — accepted, no bounce, but not in inbox). Affects EVERY client delivery → **pre-launch blocker.** Fix: add the 2 DKIM selector CNAMEs (Hostinger API) + enable DKIM signing in M365 Defender (user admin action); consider DMARC `p=quarantine` later + a sender-reputation warm-up. _status (2026-06-08): **DKIM CNAMEs CORRECTED to M365's exact values + live on authoritative NS** — selector1/2._domainkey → `...codeandcanvas.n-v1.dkim.mail.microsoft` (NOT the old `.onmicrosoft.com` format; Defender's error gave the exact targets). Gotchas: M365 now uses the newer `n-v1.dkim.mail.microsoft` DKIM target; Hostinger `overwrite:false` CONFLICTS (422) on an existing record — must DELETE+add to UPDATE. **PENDING: Sukaimi retries the Defender DKIM toggle after DNS cache clears (~15-60 min)** → then re-test deliverability. DMARC p=quarantine = later._
+- **BL-007 · EDM build path depth** — web rail is solid; the EDM build path is basic. _status: not started; deprioritised with the web/EDM rail 2026-06-11._
+
+## P3 — later (pre-existing)
 - **BL-004 · Bot-ops trigger** — _un-deferred + STARTED 2026-06-08 (the wrong-email recovery justified it: exceptions need an operator trigger, and at launch Claude isn't in the loop)._ **Built (resend):** `cc-ops` deterministic dispatcher (tolerant JOB#+email parse, has `--dry`); main agent AGENTS.md routes operator-only "resend" messages → `cc-ops` → `cc-resend`. Process: bounce ping → operator messages bot "resend JOB#### email" → bot re-delivers + replies. Tool-level tested; **pending live Telegram/Teams round-trip test** (may need gateway restart to load new AGENTS.md). Expandable to status/closeout/rekick. _status: built, awaiting bot round-trip test._
 - **BL-008 · Vision pass** — multimodal Discovery on client images (deferred for soft launch; enable when real clients supply images). _status: deferred._
 - **BL-009 · Higgsfield generated images** — server can't currently reach Higgsfield; future feature. _status: deferred._

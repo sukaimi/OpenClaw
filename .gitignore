@@ -32,3 +32,9 @@ screenshots/
 # --- local rollback tarballs (Layer 2) ---
 backups/
 *.backup.tar.gz
+
+# --- SP pipeline debris: editor backups + one-off run artifacts (not source) ---
+*.bak-*
+tools/cc-visual-qa/capture-*/
+tools/cc-visual-qa/rdq-home-manifest.json
+ccgate-canvas-*/
