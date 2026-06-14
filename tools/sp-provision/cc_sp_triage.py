@@ -39,11 +39,18 @@ SYSTEM_PAGES = {"home.aspx", "default.aspx"}  # home is handled specially by the
 # can rebuild it. As each coverage sub-task lands, register its key here.
 #   "publishing" -> sp-audit._publishing_blocks (pub-field extraction, JOB0024-109/1)
 #   "list"       -> sp-audit._listview_blocks (static list-view snapshot, JOB0024-109/2)
-HANDLED_TYPES = {"publishing", "list"}
+#   "tiles"      -> canvas_compose tiles_from_blocks -> quicklinks_wp (JOB0024-109/3)
+#   "banner"     -> canvas_compose banner_from_blocks -> hero_wp (JOB0024-109/3)
+# CAROUSEL is deliberately ABSENT: its native modern equivalent needs an SPFx web
+# part whose source is missing + toolchain broken, so it STAYS flagged (carousel-spfx)
+# — flag-don't-fake. Never add "carousel" here without a real SPFx authoring path.
+HANDLED_TYPES = {"publishing", "list", "tiles", "banner"}
 # flagReason short-key for a flagReason (must match classify() below). The
 # list-driven flag maps to the human key 'list' so the downgrade whitelist reads
-# buildableTypes:["list"].
-_FLAG_KEYS = {"publishing-layout": "publishing", "list-driven": "list"}
+# buildableTypes:["list"]. tiles/banner map to their family keys; carousel-spfx maps
+# to itself (NOT in HANDLED_TYPES) so it can never be whitelisted into buildable.
+_FLAG_KEYS = {"publishing-layout": "publishing", "list-driven": "list",
+              "hometiles": "tiles", "banner": "banner", "carousel-spfx": "carousel"}
 
 
 def _load_cfg(cfg_path):
@@ -106,9 +113,24 @@ def classify(inv, keep_months, heavy_cap, now, buildable_types=None):
         wp = int(p.get("webPartCount") or 0)
         is_pub = bool(p.get("isPublishing"))
         is_list = bool(p.get("hasListWebpart"))
+        # tiles/carousel are list-family pages with DISTINCT routing (JOB0024-109/3):
+        # HomeTiles/banner have native modern handlers; Carousel is SPFx-blocked. They
+        # are checked BEFORE the generic list flag so they get their specific reason.
+        has_tiles = bool(p.get("hasTiles"))
+        has_carousel = bool(p.get("hasCarousel"))
+        is_banner = bool(p.get("hasBanner"))
         flag = None
         if is_pub:
             flag = "publishing-layout"
+        elif has_carousel:
+            # SPFx-blocked: no native modern equivalent we can author here. STAYS
+            # flagged (carousel maps to 'carousel' which is NOT in HANDLED_TYPES, so
+            # even buildableTypes=['carousel'] cannot flip it).
+            flag = "carousel-spfx"
+        elif has_tiles:
+            flag = "hometiles"
+        elif is_banner:
+            flag = "banner"
         elif is_list:
             flag = "list-driven"
         elif (p.get("lib") or "") != "Site Pages":
@@ -126,6 +148,7 @@ def classify(inv, keep_months, heavy_cap, now, buildable_types=None):
             "modified": p.get("modified"), "ageMonths": round(age, 1) if age is not None else None,
             "bytes": p.get("bytes"), "webPartCount": wp,
             "isPublishing": is_pub, "hasListWebpart": is_list,
+            "hasTiles": has_tiles, "hasCarousel": has_carousel,
             "keep": keep, "buildable": buildable, "flagReason": flag,
         })
     return rows
