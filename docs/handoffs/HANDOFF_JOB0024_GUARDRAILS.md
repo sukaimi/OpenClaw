@@ -48,20 +48,23 @@ Status: ⬜ todo · 🔨 doing · ✅ done
 - ✅ **A2** `tools/sp-provision/cc_sp_triage.py` built — inventory → `scope-sheet.json` + `.csv`; config-driven (`triageKeepMonths`/`heavyWebpartCap`). **Tested on synthetic 6-page inventory: keep 4/archive 2, buildable 1, flagged 3 (publishing/list/heavy) — all paths correct.** NOTE: B1 (`--approve`) + C1 (`--worklist`) are ALSO scaffolded inside this script (test them in their phases). Deployed to server.
 
 ### Phase E — Exceptions rollup (read-only)
-- ⬜ **E1** new `tools/cc-visual-qa/cc-sp-rollup.mjs`: verdicts + worklist + scope-sheet → `exceptions.md`.
-- ⬜ **E2** wire rollup into `cc-sp-mirror` closeout (+ optional tracker/Command Center push).
+- ✅ **E1** `tools/cc-visual-qa/cc-sp-rollup.mjs` built — verdicts (`qa-verdict-*.json`) + scope-sheet + worklist → `exceptions.json` + `exceptions.md` (failures + flagged-skipped only; passing pages counted not listed). **Tested** on synthetic verdicts: 1 fail surfaced w/ reason, 3 flagged-skipped, 2 archived, 1 pass omitted. ✓
+- ⬜ **E2** wire rollup into `cc-sp-mirror` closeout — DEFERRED to the orchestrator-integration pass (below).
 
 ### Phase C — Page-level waves
-- ⬜ **C1** worklist generator (in `cc_sp_triage.py`): approved+buildable → `worklist.json`.
-- ⬜ **C2** driver consumes worklist: replace blunt `buildCap` with "build next `waveSize` pending", mark done/failed, resumable. Files: `cc_sp_build.py`, `cc-sp-mirror.py`. *Verify: 2-wave resume on 3-page site.*
+- ✅ **C1** worklist generator (`cc_sp_triage.py --worklist`) — approved+buildable → `worklist.json` (status pending/done/failed, waveSize). **Tested** ✓ (respects scope-approved.json).
+- ⬜ **C2** driver consumes worklist — DEFERRED to orchestrator pass.
 
-### Phase D — Backup-before-republish
-- ⬜ **D1** in `apply_page` (`canvas_compose.py:1313`): snapshot current `CanvasContent1` → `/srv/projects/<JOB>/backups/<page>.<ts>.json` before delete/replace.
-- ⬜ **D2** new `cc_sp_restore.py <JOB> <page>`: re-apply saved canvasContent (recycle-not-delete recovery). *Verify: overwrite→restore→identical.*
+### Phase D — Backup-before-republish ✅ DONE (tools; live test at F)
+- ✅ **D1** `canvas_compose._backup_page` + pre-delete call in `apply_page` (gated on env `CC_SP_BACKUP_DIR`; no call-site changes). Snapshots canvasLayout+title+sid → `/srv/projects/<JOB>/backups/<page>.<ts>.json`. Best-effort (recycle bin = fallback). Compiles OK, deployed.
+- ✅ **D2** `cc_sp_restore.py <JOB> [<page> | --list] [--at <ts>] [--site-path …]` — re-applies the newest (or chosen) backup via `apply_page`. Compiles OK, deployed. *Live overwrite→restore test at F.*
 
 ### Phase B — Scope sign-off gate
-- ⬜ **B1** `cc_sp_triage.py --approve` (or operator edits csv) → `scope-approved.json`.
-- ⬜ **B2** `cc_sp_build`/`canvas_compose` refuse pages not approved (skip+log). *Verify: build only touches approved.*
+- ✅ **B1** `cc_sp_triage.py --approve [--all-buildable]` → `scope-approved.json`. **Tested** ✓.
+- ⬜ **B2** build refuses un-approved pages — DEFERRED to orchestrator pass.
+
+### ⭐ REMAINING: ORCHESTRATOR-INTEGRATION PASS (covers E2 + B2 + C2 together)
+One coherent edit to `cc-sp-mirror.py` (+ `cc_sp_build.py`): insert **triage** stage after capture; **scope-gate** (refuse if no `scope-approved.json` / skip un-approved) before compose; turn compose's blunt `buildCap` into a **worklist/wave** loop (build next `waveSize` pending, mark done/failed, set `CC_SP_BACKUP_DIR`); run **rollup** at closeout. Then deploy + dry-run. (Kept as ONE pass to avoid editing the live driver 3×.)
 
 ### Phase F — Calibrate + prove (own-tenant)
 - ⬜ **F1** pick/seed own-tenant multi-page site w/ known good + known-unbuildable pages.
@@ -73,4 +76,4 @@ Status: ⬜ todo · 🔨 doing · ✅ done
 3. Flag-only boundary (rebuild = 109) — assumed agreed.
 
 ## CURRENT STATUS (update as we go)
-**2026-06-14:** plan locked, build order A→E→C→D→B→F. **Phase A started — A1 in progress** (enriching cc-sp-capture inventory). Nothing deployed yet. No code touches any client tenant.
+**2026-06-14:** plan locked, order A→E→C→D→B→F. **All STANDALONE tools built + unit-tested + deployed:** A1 inventory-enrich ✓, A2 triage ✓, B1 approve ✓, C1 worklist ✓, D1 backup ✓, D2 restore ✓, E1 rollup ✓ (all tested on synthetic data; D1/D2 live test pending at F). Committed on branch `job0024-guardrails`. **NEXT = the orchestrator-integration pass** (wire triage/scope-gate/waves/rollup into `cc-sp-mirror.py`+`cc_sp_build.py` = E2+B2+C2), then **Phase F** calibration (needs the own-tenant calibration-site decision). No code has touched any client tenant.

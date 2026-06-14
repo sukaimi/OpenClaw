@@ -1310,6 +1310,33 @@ def _canvas_uses_beta_webparts(canvas):
     return False
 
 
+def _backup_page(sp, sid, page_id, api, name, backup_dir):
+    """Snapshot an existing built page's canvasLayout BEFORE overwrite, so it can
+    be deterministically restored (this SharePoint has no version history).
+    Best-effort: on any failure the page's recycle-bin copy is the fallback."""
+    from datetime import datetime, timezone
+    try:
+        r = requests.get(
+            "https://graph.microsoft.com/%s/sites/%s/pages/%s/microsoft.graph.sitePage?$expand=canvasLayout"
+            % (api, sid, page_id), headers=sp.H)
+        if r.status_code >= 300:
+            print("backup: GET %s failed %d — relying on recycle bin" % (name, r.status_code))
+            return None
+        pg = r.json()
+        os.makedirs(backup_dir, exist_ok=True)
+        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        path = os.path.join(backup_dir, "%s.%s.json" % (name, ts))
+        json.dump({"name": name, "title": pg.get("title"), "api": api, "sid": sid,
+                   "savedAt": ts, "sourcePageId": page_id,
+                   "canvasLayout": pg.get("canvasLayout")},
+                  open(path, "w"), indent=1)
+        print("backup: %s -> %s" % (name, path))
+        return path
+    except Exception as e:
+        print("backup: %s failed (%s) — relying on recycle bin" % (name, str(e)[:120]))
+        return None
+
+
 def apply_page(sp, sid, name, title, canvas, publish=True, replace=True,
                hero_title=None, hero_image=None, _attempt=0):
     """Create or replace the page with the composed canvas, then publish.
@@ -1338,6 +1365,8 @@ def apply_page(sp, sid, name, title, canvas, publish=True, replace=True,
               % (_attempt, work_name, name))
     existing_id, api = find_page(sp, sid, work_name)
     page_title = hero_title or title
+    if existing_id and replace and os.environ.get("CC_SP_BACKUP_DIR"):
+        _backup_page(sp, sid, existing_id, api, work_name, os.environ["CC_SP_BACKUP_DIR"])
     deleted = False
     if existing_id and replace:
         dr = requests.delete("https://graph.microsoft.com/%s/sites/%s/pages/%s"
