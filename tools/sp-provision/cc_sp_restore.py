@@ -25,6 +25,16 @@ from spclient import SP  # noqa: E402
 PROJECTS = "/srv/projects"
 
 
+def _strip_odata(o):
+    """Recursively drop '*@odata.*' annotation keys (e.g. 'horizontalSections@odata.context')
+    that a $expand GET adds — Graph rejects them on a re-POST of canvasLayout."""
+    if isinstance(o, dict):
+        return {k: _strip_odata(v) for k, v in o.items() if "@odata" not in k}
+    if isinstance(o, list):
+        return [_strip_odata(x) for x in o]
+    return o
+
+
 def _backups_dir(job):
     return os.path.join(PROJECTS, job, "backups")
 
@@ -80,7 +90,7 @@ def _site_path(job, arg_site_path):
 def cmd_restore(job, page, at, arg_site_path):
     bpath = _pick_backup(job, page, at)
     bak = json.load(open(bpath))
-    canvas = bak.get("canvasLayout")
+    canvas = _strip_odata(bak.get("canvasLayout"))
     if not canvas:
         sys.exit("backup %s has no canvasLayout — cannot restore" % bpath)
     site_path = _site_path(job, arg_site_path)
