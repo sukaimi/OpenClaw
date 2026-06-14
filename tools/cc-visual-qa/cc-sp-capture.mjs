@@ -112,12 +112,21 @@ async function main() {
       // Collect into full inventory (de-dup by filename)
       if (!seenInv.has(key)) {
         seenInv.add(key);
+        // complexity signals for triage (heuristic — used to FLAG pages, not perfectly classify)
+        const invBody = it.WikiField || it.CanvasContent1 || it.PublishingPageContent || "";
+        const wpHits = invBody.match(/webPartData|data-sp-webpart|ms-rte-wpbox|WebPartZone|<webPart\b/gi);
+        const isPublishing = lib.title === "Pages" || !!it.PublishingPageContent;
+        const hasListWebpart = /XsltListViewWebPart|ListViewWebPart|ContentByQuery|CarouselWebPart|"isListLayout"|listId/i.test(invBody);
         inventoryAll.push({
           title:    it.Title || nm.slice(0, -5),
           file:     nm,
           lib:      lib.title,
           modified: it.Modified || "",
           created:  it.Created  || "",
+          bytes:    invBody.length,
+          webPartCount: wpHits ? wpHits.length : 0,
+          isPublishing,
+          hasListWebpart,
         });
       }
       // Apply ONLY filter and de-dup for body capture
