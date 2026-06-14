@@ -72,9 +72,11 @@ Wired into `cc_sp_build.py` (the server harness path), **backward-compatible** (
 - ✅ **E2** — rollup runs STANDALONE after the close-gate (`cc-sp-rollup.mjs <jd>`); cc_sp_build's final message points to it. (Not wired into cc-sp-mirror — the Mac orchestrator is the operator-full-run path; the server harness + standalone tools are the guardrail path. cc-sp-mirror wiring = optional later.)
 Deployed + compiles on server. **ALL BUILD WORK DONE — only Phase F (live calibration) remains.**
 
-### Phase F — Calibrate + prove (own-tenant)
-- ⬜ **F1** pick/seed own-tenant multi-page site w/ known good + known-unbuildable pages.
-- ⬜ **F2** full dry run end-to-end; confirm flags-not-fakes, gate FAILs caught, restore works, rollup shows only exceptions; calibrate thresholds + gate vs known good/bad.
+### Phase F — Calibrate + prove (REFINED — Sukaimi 2026-06-14)
+Refined because a seeded site can't reach the archive (no backdating Modified) or publishing (no classic infra in modern SPO) paths anyway → use CrestfieldClassic for live mechanics + a regex unit-test for flag-detection.
+- ✅ **F-regex** `sp-complexity.test.mjs` 7/7 — flag-detection (`webPartCount/isPublishing/hasListWebpart`) proven against REAL SharePoint markup (modern CanvasContent1, classic WikiField zones, PublishingPageContent, XsltListViewWebPart, modern list webpart). Detection factored into shared `sp-complexity.mjs` (no drift).
+- ✅ **F-read-side** LIVE on own-tenant CrestfieldClassic: capture → enriched inventory → triage → scope-sheet; real fields populated, classification correct (Home excluded as system page, other buildable, 0 false-flags).
+- ⬜ **F-build-side (remaining, optional final validation)** — a full live conversion run chaining the build-side guardrails: provision/reuse a CCBuild site → sp-audit → image-migrate → `cc-sp-build` in 2 waves (prove resume) → backup→**restore** a page → gate per page → `cc-sp-rollup` → exceptions.md. Heavier (writes to a build site); the logic is all unit-proven, this is the end-to-end live chain. Needs a build-site setup.
 
 ## OPEN DECISIONS (non-blocking; defaults assumed)
 1. Triage thresholds (18mo / heavyWebpartCap) — assumed, revisit at F.
@@ -84,4 +86,4 @@ Deployed + compiles on server. **ALL BUILD WORK DONE — only Phase F (live cali
 ## CURRENT STATUS (update as we go)
 **2026-06-14:** ✅ **ALL BUILD WORK DONE** — A1 inventory-enrich, A2 triage, B1 approve, C1 worklist, D1 backup, D2 restore, E1 rollup, + orchestrator integration (C2 waves / B2 scope-gate / D-env / E2 pointer) all built, unit-tested on synthetic data, deployed to server, and committed on branch `job0024-guardrails` (3 commits). Backward-compatible (legacy build path unchanged). **ONLY Phase F (live calibration) remains.**
 
-**Phase F nuance discovered (decision needed):** a seeded own-tenant site CANNOT exercise every path live — `Modified` dates can't be backdated (archive path) and classic publishing infra can't be created in modern SPO (publishing-layout flag). What IS live-testable on an own-tenant site: buildable+gate-PASS, heavy-media flag, list-web-part flag (if the regex fires), gate-FAIL, waves+resume, backup→restore, scope-gate, rollup. Archive + publishing flags stay synthetic-validated (A2) — justify with a regex unit-test against representative body samples. **Proposed F:** seed a small own-tenant site (~4 pages: simple / heavy / list-part / deliberately-incomplete) + capture→triage→approve→worklist→build(2 waves)→backup→restore→gate→rollup. Awaiting go (provisioning a site in the tenant = confirm first).
+**Phase F (refined, Sukaimi approved):** flag-detection unit-test **7/7 PASS** on real markup; read-side (capture→triage) **LIVE-proven** on CrestfieldClassic. **Remaining = the optional build-side live run** (waves→backup→restore→gate→rollup on a real CCBuild site) — all logic unit-proven; this is the end-to-end live chain, heavier (writes a build site). Everything committed (6 commits on `job0024-guardrails`). **The guardrails are built, deployed, and calibrated to the practical extent; the build-side live run is the one optional validation left.**
