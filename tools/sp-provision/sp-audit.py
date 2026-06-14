@@ -425,6 +425,94 @@ def _publishing_blocks(raw_html):
     return blocks
 
 
+# --------------------------------------------------------------------------- #
+# LIST-VIEW snapshot (JOB0024-109, sub-task 2)
+# An XsltListViewWebPart / ContentByQuery web part renders a LIVE query against a
+# SharePoint list. On a read-only classic SOURCE we cannot re-bind that query on
+# the modern build (no write access to the source list, and the modern Graph
+# list/CBQ web parts need a reference site to point at). So we capture a STATIC
+# SNAPSHOT of the list's items AT AUDIT TIME and emit it as ONE ordered content[]
+# block of kind 'listview'. A LINK list (items carry an href) becomes a quicklinks
+# -style block (verbatim <a> items); a DATA list (no links) becomes a simple
+# text/table block. Either way every item title + href lands in the block's html
+# so it flows through the SAME composer + copy_coverage as every other block.
+# Live dynamic re-binding stays DEFERRED — flagged below.
+# --------------------------------------------------------------------------- #
+def _fetch_list_items(sid, list_name):  # pragma: no cover
+    """STUB — live Graph list fetch. NOT wired: we make NO live calls in this rail.
+    The real implementation would GET /sites/{sid}/lists/{list_name}/items?$expand=
+    fields and normalise each row to {title, href, fields{}}; it needs a reference
+    site to validate field selection + a true dynamic binding story.
+    # TODO(JOB0024-109): live list fetch needs a reference site
+    Until then, callers pass a pre-parsed items[] array (capture/synthetic)."""
+    raise NotImplementedError(
+        "live list fetch deferred — pass a parsed items[] array "
+        "(TODO(JOB0024-109): needs a reference site)")
+
+
+def _listview_blocks(items, kind_hint=""):
+    """Turn a parsed list-items array into ONE ordered content[] block of kind
+    'listview'. `items` = [{title, href?, text?}] in the source list's view order.
+    `kind_hint` ('links'|'data'|'') lets the caller force a rendering; otherwise we
+    infer: if ANY item carries an href -> a link list (quicklinks-style <ul><li><a>);
+    else a data list (simple <ul><li> text rows). Title + href of EVERY item is
+    placed verbatim in the block's html so copy_coverage() stays meaningful and the
+    composer renders it like any other MAIN block. Returns [] for an empty list."""
+    items = [it for it in (items or []) if (it.get("title") or it.get("text"))]
+    if not items:
+        return []
+    is_links = (kind_hint == "links") or (
+        kind_hint != "data" and any((it.get("href") or "").strip() for it in items))
+    heading = (kind_hint and kind_hint.title()) or ""
+    rows = []
+    for it in items:
+        title = (it.get("title") or it.get("text") or "").strip()
+        href = (it.get("href") or "").strip()
+        label = esc_text(title)
+        if is_links and href:
+            # the href is rendered BOTH as the anchor target AND as visible text
+            # (a small trailing url) so the link survives the gate's tag-stripping
+            # copy_coverage — every title AND href round-trips verbatim.
+            rows.append('<li><a href="%s">%s</a> %s</li>'
+                        % (html.escape(href, quote=True), label, esc_text(href)))
+        else:
+            extra = it.get("text")
+            if extra and extra.strip() and extra.strip() != title:
+                rows.append("<li>%s &mdash; %s</li>" % (label, esc_text(extra.strip())))
+            else:
+                rows.append("<li>%s</li>" % label)
+    body = "<ul>\n%s\n</ul>" % "\n".join(rows)
+    # `text` is the verbatim copy the gate scores: every item's title, its href
+    # (link lists), and its extra data text (data lists). Mirrors exactly what the
+    # html above renders, so copy_coverage stays meaningful over the whole snapshot.
+    parts = []
+    for it in items:
+        title = (it.get("title") or it.get("text") or "").strip()
+        parts.append(title)
+        if is_links and (it.get("href") or "").strip():
+            parts.append(it["href"].strip())
+        else:
+            extra = (it.get("text") or "").strip()
+            if extra and extra != title:
+                parts.append(extra)
+    text = " ".join(p for p in parts if p).strip()
+    return [{
+        "kind": "listview",
+        "heading": heading,
+        "text": text,
+        "html": body,
+        "images": [],
+        "items": [],
+    }]
+
+
+def esc_text(s):
+    """Minimal HTML-escape for verbatim list-item text (the composer's text web
+    part renders html; titles must not break it)."""
+    return (html.unescape(s or "")
+            .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+
+
 def read_modern_pages(sid):
     """Return [(name,title,text,raw_html)] for MODERN site pages (may be empty for a
     classic source). raw_html is the canvasLayout JSON blob, scanned for innerHtml <img>."""

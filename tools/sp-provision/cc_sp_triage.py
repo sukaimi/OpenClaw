@@ -38,9 +38,12 @@ SYSTEM_PAGES = {"home.aspx", "default.aspx"}  # home is handled specially by the
 # flag key (the first token of flagReason) to the content-type-coverage handler that
 # can rebuild it. As each coverage sub-task lands, register its key here.
 #   "publishing" -> sp-audit._publishing_blocks (pub-field extraction, JOB0024-109/1)
-HANDLED_TYPES = {"publishing"}
-# flagReason short-key for the publishing-layout flag (must match classify() below)
-_FLAG_KEYS = {"publishing-layout": "publishing"}
+#   "list"       -> sp-audit._listview_blocks (static list-view snapshot, JOB0024-109/2)
+HANDLED_TYPES = {"publishing", "list"}
+# flagReason short-key for a flagReason (must match classify() below). The
+# list-driven flag maps to the human key 'list' so the downgrade whitelist reads
+# buildableTypes:["list"].
+_FLAG_KEYS = {"publishing-layout": "publishing", "list-driven": "list"}
 
 
 def _load_cfg(cfg_path):

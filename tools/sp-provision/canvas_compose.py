@@ -411,7 +411,12 @@ def copy_coverage(source_text, build_html):
 # field), extracted verbatim by sp-audit's _publishing_blocks. It renders in the
 # MAIN column exactly like a "section" so a publishing page flows through the SAME
 # composer + completeness gate as an article page (JOB0024-109).
-MAIN_KINDS = {"welcome", "section", "pub-field"}
+# "listview" = a STATIC SNAPSHOT of a classic XsltListViewWebPart / ContentByQuery
+# list, extracted verbatim by sp-audit's _listview_blocks (JOB0024-109). A link
+# list renders as a verbatim <ul> of <a> items, a data list as a verbatim <ul> of
+# text rows — both flow through the MAIN column exactly like a "section" so a
+# list-driven page goes through the SAME composer + completeness gate.
+MAIN_KINDS = {"welcome", "section", "pub-field", "listview"}
 SIDEBAR_KINDS = {"quicklinks", "contacts", "events", "documents", "brands"}
 
 
@@ -716,6 +721,28 @@ def _build_col_webparts(col, ctx):
                 % (overflow, col.get("limit", 8)))
         heading = col.get("heading") or "Quick links"
         wps.append(quicklinks_wp(items, heading=heading))
+
+    elif kind == "listview":
+        # STATIC list-view snapshot (JOB0024-109). Pull the verbatim 'listview'
+        # content block (by name or kind) and render it: a LINK list goes through
+        # the native Quick Links web part (titles+urls carried in serverProcessedContent,
+        # which the gate folds in); a DATA list (no <a> tags) stays a verbatim text
+        # web part. Either way every item title/href round-trips.
+        b = content_by_kind.get(col.get("fromBlock", "listview"))
+        if b:
+            items, overflow = _links_from_block(b, col.get("limit", 8))
+            has_links = any((it.get("url") or "").strip() for it in items)
+            if has_links:
+                if overflow:
+                    ctx["notes"].append(
+                        "listview: %d link(s) over the %d cap rendered as text overflow"
+                        % (overflow, col.get("limit", 8)))
+                wps.append(quicklinks_wp(items, heading=col.get("heading")
+                                         or b.get("heading") or "Quick links"))
+                if overflow:  # keep the overflow links verbatim in a text wp (gate)
+                    wps.append(text_wp(_block_html(b)))
+            else:
+                wps.append(text_wp(_block_html(b)))
 
     elif kind == "image":
         # Support both nested {"image": {"src": ...}} and flat {"src": ..., "type": "image"}
