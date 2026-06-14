@@ -407,7 +407,11 @@ def copy_coverage(source_text, build_html):
 # Events/Documents -> sidebar, Welcome/CEO/intro -> hero+main, by the source's
 # OWN structure. No filler, no paraphrase, no cross-contamination.
 # --------------------------------------------------------------------------- #
-MAIN_KINDS = {"welcome", "section"}
+# "pub-field" = a classic publishing field-control region (rich-text body / image
+# field), extracted verbatim by sp-audit's _publishing_blocks. It renders in the
+# MAIN column exactly like a "section" so a publishing page flows through the SAME
+# composer + completeness gate as an article page (JOB0024-109).
+MAIN_KINDS = {"welcome", "section", "pub-field"}
 SIDEBAR_KINDS = {"quicklinks", "contacts", "events", "documents", "brands"}
 
 

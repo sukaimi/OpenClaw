@@ -32,6 +32,16 @@ DEFAULT_HEAVY_CAP = 6
 # pages that are scaffolding/system, never client content
 SYSTEM_PAGES = {"home.aspx", "default.aspx"}  # home is handled specially by the builder
 
+# flag-don't-fake: a flagged page type may only flip flag->buildable when an actual
+# build handler exists for it AND the operator whitelists it via `buildableTypes`
+# (job.config "buildableTypes" or --buildable-types). HANDLED_TYPES maps the short
+# flag key (the first token of flagReason) to the content-type-coverage handler that
+# can rebuild it. As each coverage sub-task lands, register its key here.
+#   "publishing" -> sp-audit._publishing_blocks (pub-field extraction, JOB0024-109/1)
+HANDLED_TYPES = {"publishing"}
+# flagReason short-key for the publishing-layout flag (must match classify() below)
+_FLAG_KEYS = {"publishing-layout": "publishing"}
+
 
 def _load_cfg(cfg_path):
     if cfg_path and os.path.isfile(cfg_path):
@@ -67,7 +77,23 @@ def _months_since(iso, now):
         return None
 
 
-def classify(inv, keep_months, heavy_cap, now):
+def _flag_key(flag):
+    """Short stable key for a flagReason (first token), e.g.
+    'heavy-media (7 web parts > cap 6)' -> 'heavy-media'. Maps known full reasons
+    via _FLAG_KEYS so the downgrade whitelist can use a human key ('publishing')."""
+    if not flag:
+        return None
+    head = flag.split(" ")[0]
+    return _FLAG_KEYS.get(head, head)
+
+
+def classify(inv, keep_months, heavy_cap, now, buildable_types=None):
+    """Classify pages into a scope sheet. `buildable_types` is the operator's
+    whitelist of flagged content-types to TREAT as buildable (config
+    `buildableTypes` / --buildable-types). A flagged type only flips
+    flag->buildable when it's whitelisted AND a handler exists in HANDLED_TYPES
+    (flag-don't-fake); the per-page gate still applies downstream."""
+    whitelist = set(buildable_types or [])
     rows = []
     for p in inv:
         f = (p.get("file") or "").lower()
@@ -86,6 +112,11 @@ def classify(inv, keep_months, heavy_cap, now):
             flag = "non-sitepages-lib"
         elif wp > heavy_cap:
             flag = "heavy-media (%d web parts > cap %d)" % (wp, heavy_cap)
+        # flag->buildable downgrade: only when the operator whitelisted this type
+        # AND we actually have a handler that can rebuild it.
+        fkey = _flag_key(flag)
+        if flag and fkey in whitelist and fkey in HANDLED_TYPES:
+            flag = None
         buildable = keep and flag is None
         rows.append({
             "file": p.get("file"), "title": p.get("title"), "lib": p.get("lib"),
@@ -157,6 +188,9 @@ def main():
     ap.add_argument("--config")
     ap.add_argument("--keep-months", type=int)
     ap.add_argument("--heavy-cap", type=int)
+    ap.add_argument("--buildable-types",
+                    help="comma-separated flagged types to treat as buildable "
+                         "(e.g. 'publishing'); only flips when a handler exists")
     ap.add_argument("--out-dir")
     ap.add_argument("--approve", action="store_true")
     ap.add_argument("--all-buildable", action="store_true")
@@ -169,10 +203,15 @@ def main():
     cfg = _load_cfg(a.config)
     keep_months = a.keep_months or cfg.get("triageKeepMonths") or DEFAULT_KEEP_MONTHS
     heavy_cap = a.heavy_cap or cfg.get("heavyWebpartCap") or DEFAULT_HEAVY_CAP
+    # buildableTypes: CLI overrides config; config default []. Normalize to a list.
+    if a.buildable_types is not None:
+        buildable_types = [t.strip() for t in a.buildable_types.split(",") if t.strip()]
+    else:
+        buildable_types = cfg.get("buildableTypes") or []
     now = datetime.now(timezone.utc)
 
     inv = json.load(open(inv_path))
-    rows = classify(inv, keep_months, heavy_cap, now)
+    rows = classify(inv, keep_months, heavy_cap, now, buildable_types)
 
     if a.approve:
         cmd_approve(out_dir, rows, a.all_buildable)
@@ -183,7 +222,8 @@ def main():
 
     jp, cp = write_outputs(rows, out_dir)
     print("scope sheet -> %s , %s" % (jp, cp))
-    print("  (keepMonths=%d, heavyCap=%d)" % (keep_months, heavy_cap))
+    print("  (keepMonths=%d, heavyCap=%d, buildableTypes=%s)"
+          % (keep_months, heavy_cap, buildable_types or "[]"))
     summary(rows)
 
 
