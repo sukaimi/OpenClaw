@@ -1,88 +1,110 @@
-# SP Client-Tenant Deployment Guide
+# SP Client-Tenant Deployment — Dev Handover Guide
 
-## Overview
+## Delivery model
 
-After Code&Craft completes a SharePoint classic-to-modern migration in the C&C build tenant (e.g. CCBuild-JOB0023), the finished site is exported and imported into the client's own Microsoft 365 tenant. This guide covers the two parties' actions: a one-time access grant by the client admin, followed by the import run by the C&C operator.
+Completed SharePoint migrations live in the **C&C build tenant** (`CCBuild-JOB####.sharepoint.com`). The client reviews pages via **screenshare during cadence calls**. Once approved, a C&C developer manually deploys the site into the client's own Microsoft 365 tenant.
 
----
-
-## Prerequisites
-
-- A modern SharePoint site already provisioned in the client's tenant (the target site)
-- Client's Microsoft 365 global admin or SharePoint admin credentials
-- Job number (e.g. JOB0023) and confirmation from C&C that the export package is ready
+This guide is for the **developer doing that manual deployment**. It is not an automated pipeline step.
 
 ---
 
-## Step 1: Grant app access — client admin action (~5 min)
+## What gets deployed
 
-The C&C app registration ("OpenClaw SP Provision") needs **Sites.Selected Write** permission scoped to the client's target site. No tenant-wide admin consent is required — Sites.Selected is per-site only.
+- All modern pages built and gate-verified in `CCBuild-JOB####`
+- Page canvas layout + web parts (Hero, Text, Image, Quick Links)
+- Branding: site theme + wallpaper (applied via `cc-sp-styler-attach.py` on the target)
+- Images: uploaded from the C&C build site's Site Assets into the client's Site Assets
 
-The client admin runs the following PowerShell once:
+---
+
+## Step 1: Understand what was built
+
+Before starting, review the job deliverables in the build tenant:
+
+- `/srv/projects/JOB####/sp-handover-summary.json` — migrated pages, exceptions, tier breakdown
+- `/srv/projects/JOB####/sp-expect.json` — source content per page
+- `/srv/projects/JOB####/image-map.json` — image src → built URL mapping
+- `/srv/projects/JOB####/sp-scored.json` — tier + priority per page
+
+The xlsx tracker (`cc-sp-tracker.py`) output is the client-facing deliverable checklist.
+
+---
+
+## Step 2: Get access to the client tenant
+
+The client's SharePoint or Global admin must grant the deploying developer (or a service principal) appropriate access to the target site. Options:
+
+- **Developer personal account** — admin adds developer as Site Collection Admin on the target site (quickest for a one-off)
+- **Service principal** — register an app in the client's Azure AD, grant Sites.Selected Write to the target site via PnP PowerShell:
 
 ```powershell
-# Install PnP.PowerShell if not already present
-Install-Module PnP.PowerShell -Scope CurrentUser
-
-# Connect interactively to the target site
-Connect-PnPOnline -Url "https://<client>.sharepoint.com/sites/<their-site>" -Interactive
-
-# Grant the C&C app registration write access to this site only
+Connect-PnPOnline -Url "https://<client>.sharepoint.com/sites/<site>" -Interactive
 Grant-PnPAzureADAppSitePermission `
-    -AppId "<C&C clientId>" `
-    -DisplayName "Code&Craft SP Provision" `
-    -Site "https://<client>.sharepoint.com/sites/<their-site>" `
+    -AppId "<service-principal-clientId>" `
+    -DisplayName "C&C Deploy" `
+    -Site "https://<client>.sharepoint.com/sites/<site>" `
     -Permissions Write
 ```
 
-**Replacements:**
-- `<client>` — the client's SharePoint domain prefix (e.g. `contoso`)
-- `<their-site>` — the target site name (e.g. `intranet`)
-- `<C&C clientId>` — provided by C&C (the `sharepoint.clientId` from the OpenClaw config)
+---
+
+## Step 3: Recreate pages in the client tenant
+
+For each page in `sp-handover-summary.json → migrated`:
+
+1. Read `sp-export-package/pages/<name>.json` (canvasLayout exported from the build site via Graph beta)
+2. Strip any `@odata.*` keys recursively before POSTing (Graph rejects them with 400)
+3. POST to `/_api/v2.0/sites/<clientSiteId>/pages` with the canvas JSON
+4. Publish: `POST /_api/v2.0/sites/<clientSiteId>/pages/<pageId>/publish`
+
+**Key gotcha:** `@odata.context` and similar metadata keys embedded in `canvasLayout` must be stripped before re-POST — use a recursive strip before any Graph write.
 
 ---
 
-## Step 2: Provide C&C with tenant details
+## Step 4: Migrate images
 
-Once access is granted, the client provides C&C with:
-
-- **Tenant ID** — found in Azure Active Directory → Overview → Tenant ID
-- **Target site URL** — the full URL of the site access was granted on
+1. Download images from the C&C build site's Site Assets (`/sites/CCBuild-JOB####/SiteAssets/...`)
+2. Upload to the client's Site Assets under `/Migrated/JOB####/`
+3. Rewrite image URLs in the canvas JSON (use `image-map.json` for targeted swaps, then bulk prefix replace for any remaining build-site URLs)
 
 ---
 
-## Step 3: C&C runs the import — operator action
+## Step 5: Apply branding
 
-With the export package ready and client tenant details in hand, the C&C operator runs:
+Run `cc-sp-styler-attach.py --config <clientConfig>` against the client target site, with a config pointing at the client tenant. Requires an authenticated Graph token for the client tenant.
 
-```bash
-# Export from the C&C build site
-python3 cc_sp_export.py --job JOB####
+---
 
-# Import into the client's tenant
-python3 cc_sp_import.py \
-    --package /srv/projects/JOB####/sp-export-package/ \
-    --target-site https://<client>.sharepoint.com/sites/<their-site> \
-    --tenant <client-tenant-id>
+## Step 6: Verify
+
+Walk each delivered page in the client site and confirm:
+- Content renders correctly
+- Images load
+- Navigation links resolve
+
+Cross-reference against `qa-verdict-*.json` files from the build run to know exactly what was gate-verified.
+
+---
+
+## Reference: canvasLayout export (manual)
+
+To manually export a built page's canvasLayout from the C&C build tenant for reference:
+
+```python
+# Requires spclient with build-tenant credentials
+import json
+from spclient import SPClient
+
+client = SPClient()
+token = client.graph_token()
+site_id = client.site_id()
+
+page_name = "Innovation is the Key to Success.aspx"
+resp = requests.get(
+    f"https://graph.microsoft.com/beta/sites/{site_id}/pages?$filter=name eq '{page_name}'&$expand=canvasLayout",
+    headers={"Authorization": f"Bearer {token}"}
+)
+page = resp.json()["value"][0]
+# Strip @odata.* before saving
+print(json.dumps(page["canvasLayout"], indent=2))
 ```
-
-Both scripts are idempotent — safe to re-run if interrupted.
-
----
-
-## Step 4: Verify
-
-- Visit the target site and confirm all pages appear and render correctly
-- Check that images load (Site Assets upload succeeded)
-- If a delegated SharePoint session is available for the client tenant, run the C&C verify gate for a structured diff check
-
----
-
-## Troubleshooting
-
-| Symptom | Likely cause | Fix |
-|---|---|---|
-| `403` on page POST | Sites.Selected grant not applied, or wrong site URL | Re-run PowerShell grant with the exact target site URL |
-| Images returning `404` | Site Assets upload failed mid-run | Re-run `cc_sp_import.py` (idempotent) |
-| Page already exists warning | Script found an existing page | Expected — script PATCHes in place, no action needed |
-| `401 Unauthorized` | Certificate mismatch or wrong tenant ID | Verify `--tenant` value matches the tenant where the grant was made |
