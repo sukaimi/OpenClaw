@@ -126,7 +126,7 @@ def page_targets(cfg):
     return targets
 
 
-def build_plan(cfg):
+def build_plan(cfg, server_mode=False):
     """Return the ORDERED stage plan. Each stage: name, where (mac|server), cmd (str), note.
     `cmd` is the literal invocation, params threaded from cfg — printed verbatim on --dry-run."""
     job = cfg["job"]
@@ -150,14 +150,16 @@ def build_plan(cfg):
     P = []  # plan
 
     # 1. verify-access — confirm we can READ the source + WRITE the target before doing work.
-    #    Auth splits by host: source readability is delegated-session (Mac) — the server
-    #    app-cert has no grant on the client tenant; target writability is app-cert (server).
-    P.append(dict(
-        name="verify-access", where="mac",
-        cmd="%s %s/cc-sp-capture.mjs %s --job %s --probe --state %s"
-            % (NODE, MAC_QA_TOOLS, shlex.quote(src), job, shlex.quote(src_state)),
-        note="SOURCE readable: probe the classic site over the delegated session "
-             "(enumerate pages/lists/nav; exits non-zero if the session can't reach _api)."))
+    #    Source-side probe is Mac-only (delegated session); skipped in --server mode since
+    #    verify-at-intake already confirmed access + populated the capture bundle.
+    #    Target writability (app-cert) always runs server-side.
+    if not server_mode:
+        P.append(dict(
+            name="verify-access", where="mac",
+            cmd="%s %s/cc-sp-capture.mjs %s --job %s --probe --state %s"
+                % (NODE, MAC_QA_TOOLS, shlex.quote(src), job, shlex.quote(src_state)),
+            note="SOURCE readable: probe the classic site over the delegated session "
+                 "(enumerate pages/lists/nav; exits non-zero if the session can't reach _api)."))
     P.append(dict(
         name="verify-access", where="server",
         cmd="python3 %s/cc_preflight_sp.py --job %s --source %s --target %s"
@@ -165,33 +167,32 @@ def build_plan(cfg):
         note="TARGET writable: app-cert preflight (web reachable + AddListItems perm); "
              "abort early if not."))
 
-    # 2. capture — Mac-side, authed interactive SP session -> capture bundle in jobDir.
-    P.append(dict(
-        name="capture", where="mac",
-        cmd="%s %s/cc-sp-capture.mjs %s --job %s --out %s/capture %s --state %s --inventory-out %s/site-inventory.json"
-            % (NODE, MAC_QA_TOOLS, shlex.quote(src), job, jobDir, sel, shlex.quote(src_state), jobDir),
-        note="authed bundle (pages+lists+images) + full site-inventory.json (ALL pages, before --pages filter). "
-             "Then build the source manifest the gate diffs:"))
-    P.append(dict(
-        name="capture", where="mac",
-        cmd="%s %s/cc-sp-manifest.mjs %s %s --auth --download-images %s/capture/images --images-map %s/capture/images-map.json"
-            % (NODE, MAC_QA_TOOLS, shlex.quote(src), src_man, jobDir, jobDir),
-        note="HOME source manifest (img + bg-image + links + text) — gated vs SitePages/Home.aspx; "
-             "also downloads CONTENT image bytes (fresh afdcache) into capture/ so image_migrate has them."))
-    # PER-PAGE source manifests: one comprehensive manifest per ARTICLE page, captured from its
-    # classic source URL (lib "Pages": <sourceUrl>/Pages/<name>), written to <jobDir>/manifests/<stem>.json.
-    # The verify stage gates EACH article against its own manifest + its own built SitePages URL, so a
-    # text/image/link miss on ANY single article FAILS the job (not just the home page).
-    for page in article_pages(cfg):
-        stem = manifest_stem(page)
-        art_src = "%s/Pages/%s" % (src, page)
-        art_man = "%s/manifests/%s.json" % (jobDir, stem)
+    # 2. capture — Mac-side only. Skipped in --server mode: verify-at-intake already
+    #    populated the capture bundle before dispatch. In Mac mode, also skipped if the
+    #    bundle already exists on the server (e.g. re-run after a partial failure).
+    if not server_mode:
+        P.append(dict(
+            name="capture", where="mac",
+            cmd="%s %s/cc-sp-capture.mjs %s --job %s --out %s/capture %s --state %s --inventory-out %s/site-inventory.json"
+                % (NODE, MAC_QA_TOOLS, shlex.quote(src), job, jobDir, sel, shlex.quote(src_state), jobDir),
+            note="authed bundle (pages+lists+images) + full site-inventory.json (ALL pages, before --pages filter). "
+                 "Then build the source manifest the gate diffs:"))
         P.append(dict(
             name="capture", where="mac",
             cmd="%s %s/cc-sp-manifest.mjs %s %s --auth --download-images %s/capture/images --images-map %s/capture/images-map.json"
-                % (NODE, MAC_QA_TOOLS, shlex.quote(art_src), shlex.quote(art_man), jobDir, jobDir),
-            note="ARTICLE source manifest for %r — gated per-page; also downloads its CONTENT "
-                 "image bytes into capture/ (closes the rendered-only-image gap)." % page))
+                % (NODE, MAC_QA_TOOLS, shlex.quote(src), src_man, jobDir, jobDir),
+            note="HOME source manifest (img + bg-image + links + text) — gated vs SitePages/Home.aspx; "
+                 "also downloads CONTENT image bytes (fresh afdcache) into capture/ so image_migrate has them."))
+        for page in article_pages(cfg):
+            stem = manifest_stem(page)
+            art_src = "%s/Pages/%s" % (src, page)
+            art_man = "%s/manifests/%s.json" % (jobDir, stem)
+            P.append(dict(
+                name="capture", where="mac",
+                cmd="%s %s/cc-sp-manifest.mjs %s %s --auth --download-images %s/capture/images --images-map %s/capture/images-map.json"
+                    % (NODE, MAC_QA_TOOLS, shlex.quote(art_src), shlex.quote(art_man), jobDir, jobDir),
+                note="ARTICLE source manifest for %r — gated per-page; also downloads its CONTENT "
+                     "image bytes into capture/ (closes the rendered-only-image gap)." % page))
 
     # 3. audit — server-side, from the capture bundle -> sp-expect.json (drives compose).
     P.append(dict(
@@ -241,21 +242,19 @@ def build_plan(cfg):
         note="T6 (may not exist yet). Attaches styler with per-site wallpaper=%s brand=%s."
              % (wall, brand)))
 
-    # 7. verify — T3 deterministic gate; Mac-side (authed render). FAILS the job on miss.
-    #    Runs ONCE PER PAGE: HOME (home-manifest vs SitePages/Home.aspx) + EACH article
-    #    (manifests/<stem>.json vs its built SitePages/<name>). The driver FAILS the job if ANY
-    #    single page gate fails (live_run aborts on the first non-zero exit). Each gate consumes
-    #    image-map.json (both migration paths populated) to NAME swaps; each writes its own verdict
-    #    JSON (qa-verdict-<label>.json) so per-page results are auditable.
+    # 7. verify — server-side Python gate via cc_sp_verify_gate.py. Reads CanvasContent1
+    #    directly from the build tenant via Graph app-cert (no Playwright session needed).
+    #    Runs once per page; FAILS the job if ANY page fails.
     for (label, page_src_man, built_url, min_sec) in page_targets(cfg):
         verdict_out = "%s/qa-verdict-%s.json" % (jobDir, label)
+        page_file = built_url.split("/SitePages/")[-1]  # e.g. "Home.aspx"
         P.append(dict(
-            name="verify", where="mac",
-            cmd="%s %s/cc-completeness-gate.mjs --source %s --built-canvas-url %s "
-                "--image-map %s --min-sections %d --state %s --out %s"
-                % (NODE, MAC_QA_TOOLS, shlex.quote(page_src_man), shlex.quote(built_url),
-                   imap, min_sec, BUILD_STATE, shlex.quote(verdict_out)),
-            note="gate page %r: missing image/link/text -> FAIL (driver aborts closeout)." % label))
+            name="verify", where="server",
+            cmd="python3 %s/cc_sp_verify_gate.py --source %s --built-site-url %s --page %s "
+                "--image-map %s --min-sections %d --out %s --job %s"
+                % (SRV_PROV, shlex.quote(page_src_man), shlex.quote(tgt),
+                   shlex.quote(page_file), imap, min_sec, shlex.quote(verdict_out), job),
+            note="server gate page %r: CanvasContent1 diff via SP REST app-cert; FAIL aborts closeout." % label))
 
     # 8. tracker — T5 deliverable. Runs AFTER verify so qa-verdict-*.json files exist and
     #    Sheet3 per-page status reflects the ACTUAL gate result (not self-asserted). The tracker
@@ -313,11 +312,14 @@ def print_plan(cfg, plan):
     print("=" * 78)
 
 
-def run_stage(st):
+def run_stage(st, server_mode=False):
     where = st["where"]
     cmd = st["cmd"]
     log("RUN (%s) %s" % (where, st["name"]))
-    if where == "server":
+    if server_mode:
+        # All stages run locally on the server — no SSH wrapper needed.
+        full = ["/bin/sh", "-c", cmd]
+    elif where == "server":
         full = SSH + [cmd]
     else:
         full = ["/bin/sh", "-c", cmd]
@@ -332,9 +334,23 @@ def exists_server(path):
     return r.stdout.strip() == "Y"
 
 
-def live_run(cfg, plan, start=None, only=None):
+def live_run(cfg, plan, start=None, only=None, server_mode=False):
     jobDir = cfg["jobDir"]
     started = start is None
+
+    def file_exists(path):
+        if server_mode:
+            return os.path.isfile(path)
+        return exists_server(path)
+
+    # In server mode, assert capture bundle exists before starting.
+    if server_mode:
+        bundle = "%s/capture/manifest.json" % jobDir
+        if not os.path.isfile(bundle):
+            raise SystemExit(
+                "[mirror] capture bundle missing: %s\n"
+                "Run verify-at-intake first to populate the capture bundle." % bundle)
+
     for st in plan:
         if only and st["name"] != only:
             continue
@@ -346,16 +362,16 @@ def live_run(cfg, plan, start=None, only=None):
         # parallel-build scripts: skip + flag if absent rather than crash
         if st["name"] in PARALLEL_STAGES:
             script = st["cmd"].split()[1]  # the .py path
-            if not exists_server(script):
+            if not file_exists(script):
                 log("SKIP (%s): %s not present yet (parallel build) — FLAG for follow-up." %
                     (st["name"], PARALLEL_STAGES[st["name"]]))
                 continue
         # before the gate, assert image-map.json is complete
         if st["name"] == "verify":
             imap = "%s/image-map.json" % jobDir
-            if not exists_server(imap):
+            if not file_exists(imap):
                 raise SystemExit("[mirror] %s missing — both migration paths must populate it." % imap)
-        run_stage(st)
+        run_stage(st, server_mode=server_mode)
     log("pipeline complete.")
 
 
@@ -365,15 +381,18 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="print ordered plan; execute nothing")
     ap.add_argument("--from", dest="start", help="resume at this stage")
     ap.add_argument("--only", help="run a single stage")
+    ap.add_argument("--server", action="store_true",
+                    help="run on the server: all stages execute locally (no SSH); "
+                         "capture stages skipped (bundle must already exist from verify-at-intake)")
     a = ap.parse_args()
 
     cfg = load_config(a.config)
-    plan = build_plan(cfg)
+    plan = build_plan(cfg, server_mode=a.server)
 
     if a.dry_run:
         print_plan(cfg, plan)
         return
-    live_run(cfg, plan, start=a.start, only=a.only)
+    live_run(cfg, plan, start=a.start, only=a.only, server_mode=a.server)
 
 
 if __name__ == "__main__":
