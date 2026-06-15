@@ -514,12 +514,12 @@ def esc_text(s):
 
 
 def read_modern_pages(sid):
-    """Return [(name,title,text,raw_html)] for MODERN site pages (may be empty for a
+    """Return [(name,title,text,raw_html,last_modified)] for MODERN site pages (may be empty for a
     classic source). raw_html is the canvasLayout JSON blob, scanned for innerHtml <img>."""
     out = []
     for api in ("v1.0", "beta"):
         r = requests.get("https://graph.microsoft.com/%s/sites/%s/pages"
-                         "?$select=id,name,title,webUrl&$top=200" % (api, sid),
+                         "?$select=id,name,title,webUrl,lastModifiedDateTime&$top=200" % (api, sid),
                          headers={"Authorization": "Bearer " + graph_token()})
         if r.status_code >= 300:
             continue
@@ -533,14 +533,14 @@ def read_modern_pages(sid):
             if c.status_code < 300:
                 blob = json.dumps(c.json().get("canvasLayout") or {})
                 txt = _text(blob)
-            out.append((p.get("name"), p.get("title"), txt, blob))
+            out.append((p.get("name"), p.get("title"), txt, blob, p.get("lastModifiedDateTime")))
         if out:
             break
     return out
 
 
 def read_classic_pages(sid):
-    """Return [(name,title,text,raw_html)] for CLASSIC .aspx pages read from the page
+    """Return [(name,title,text,raw_html,last_modified)] for CLASSIC .aspx pages read from the page
     library drive. raw_html is the server-rendered .aspx, scanned for <img> refs."""
     out = []
     dr = requests.get("%s/sites/%s/drives" % (GRAPH, sid),
@@ -561,7 +561,7 @@ def read_classic_pages(sid):
             g = requests.get(durl)
             if g.status_code < 300:
                 body = g.text
-        out.append((nm, nm[:-5], _text(body), body))
+        out.append((nm, nm[:-5], _text(body), body, it.get("lastModifiedDateTime")))
     return out
 
 
@@ -620,7 +620,7 @@ def read_classic_pages_sprest(web, tenant=None):
     out, skipped = [], []
     for list_title in SP_REST_PAGE_LISTS:
         url = ("%s/_api/web/lists/getbytitle('%s')/items"
-               "?$select=FileLeafRef,Title,WikiField,CanvasContent1&$top=500"
+               "?$select=FileLeafRef,Title,WikiField,CanvasContent1,Modified&$top=500"
                % (site_web, list_title.replace(" ", "%20")))
         r = requests.get(url, headers=h)
         if r.status_code >= 300:
@@ -634,7 +634,7 @@ def read_classic_pages_sprest(web, tenant=None):
                 continue
             body = it.get("WikiField") or it.get("CanvasContent1") or ""
             title = it.get("Title") or nm[:-5]
-            out.append((nm, title, _text(body), body))
+            out.append((nm, title, _text(body), body, it.get("Modified")))
         if out or skipped:
             break  # found the page library; don't double-count from a second list
     return out, skipped
@@ -802,7 +802,7 @@ def load_capture(cap_dir):
     authenticated browser session) instead of doing an authed network read. Returns the
     same shape the network path produces:
         (pages, src_kind, web, sid, lists, skipped_pages)
-    where pages = [(name, title, text, raw_html)]."""
+    where pages = [(name, title, text, raw_html, last_modified)]."""
     man = json.load(open(os.path.join(cap_dir, "manifest.json"), encoding="utf-8"))
     web = man.get("sourceUrl") or man.get("siteRoot") or ""
     sid = man.get("sourceSiteId")
@@ -816,7 +816,7 @@ def load_capture(cap_dir):
         bf = os.path.join(cap_dir, p.get("body", ""))
         body = open(bf, encoding="utf-8").read() if os.path.exists(bf) else ""
         title = p.get("title") or nm[:-5]
-        pages.append((nm, title, _text(body), body))
+        pages.append((nm, title, _text(body), body, p.get("lastModified")))
     if not pages:
         print("[audit] FATAL: capture bundle has no usable pages (%s)" % cap_dir)
         sys.exit(3)
@@ -936,7 +936,7 @@ def main():
     if skipped_pages:
         expect["skippedSystemPages"] = skipped_pages
     total_imgs = 0
-    for name, title, text, raw_html in pages:
+    for name, title, text, raw_html, last_modified in pages:
         # modern build page name: keep the source .aspx name so the page maps 1:1
         pname = name if name.lower().endswith(".aspx") else (name + ".aspx")
         images = extract_images(raw_html)
@@ -975,6 +975,7 @@ def main():
             # and rewrites the <img src> to the new build-site URL using `filename` as the
             # stable key. The gate (optional) asserts these `filename`s land on the build page.
             "images": images,
+            "lastModified": last_modified,
         })
 
     os.makedirs(os.path.dirname(out) or ".", exist_ok=True)

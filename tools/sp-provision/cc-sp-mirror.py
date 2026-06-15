@@ -39,42 +39,10 @@ IMAGE-MAP COMPLETENESS (folds prior task #5):
                      image-map.json (its _merge_image_map step) — closes the old home2/ gap where
                      homepage migrations were not recorded.
   After both run, the driver asserts image-map.json exists and is non-empty before the gate stage.
-
-SUBSITES (JOB0024-109 sub-task 4 — OFF by default, additive):
-  A classic source site may NEST subsites (webs); each is its own page/list/nav surface and must
-  NOT be merged into the parent. cc_sp_subsites.py enumerates a captured webinfos.json and fans out
-  ONE child job descriptor per subsite. This is intentionally NOT wired into the single-site stage
-  plan above — it is an OPT-IN pre-step (see maybe_fan_out_subsites() below), so existing single-site
-  runs are completely unchanged. Live nested-web AUTH + target naming/nav stitching need a reference
-  multi-web site to finish; the enumeration/fan-out LOGIC is implemented + unit-tested repo-only.
 """
 
 import sys, os, json, argparse, shlex, subprocess, datetime
 from urllib.parse import urlparse
-
-
-# ---- OPT-IN subsite fan-out (JOB0024-109 sub-task 4) — additive, OFF by default ----
-# Not called anywhere in the default single-site flow; provided so an operator can, given a
-# captured <jobDir>/webinfos.json, compute the per-subsite child-job plan WITHOUT changing any
-# existing behaviour. Returns descriptors only — this helper itself writes NOTHING.
-def maybe_fan_out_subsites(cfg, webinfos_path=None, target_template="{parent}-{slug}"):
-    """OFF-by-default. If `webinfos_path` (a captured /_api/web/webinfos JSON) is provided and
-    exists, return the list of child job descriptors for the subsites under cfg['sourceUrl'].
-    Default path is <jobDir>/webinfos.json; when absent, returns [] (no-op). PURE: no writes.
-
-    # TODO(JOB0024-109 subsites): wiring this as an actual pipeline stage (and persisting the
-    # child descriptors / dispatching child jobs) needs a live reference nested site to validate
-    # nested-web auth reach + target-name provisioning + parent<->child nav stitching."""
-    import importlib.util
-    path = webinfos_path or os.path.join(cfg.get("jobDir", ""), "webinfos.json")
-    if not path or not os.path.exists(path):
-        return []
-    spec = importlib.util.spec_from_file_location(
-        "cc_sp_subsites", os.path.join(MAC_QA, "cc_sp_subsites.py"))
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    subs = mod.enumerate_subsites(json.load(open(path)))
-    return mod.fan_out(cfg, subs, target_template)
 
 # ---- where the reused scripts live (no per-site values; pure tool locations) ----
 SERVER = "root@76.13.179.220"
@@ -232,6 +200,22 @@ def build_plan(cfg):
             % (SRV_PROV, job, jobDir, jobDir),
         note="capture -> sp-expect.json (+enrich); reusable, content-driven."))
 
+    # 3b. scorer — Phase 1 page scoring: reads sp-expect.json, writes sp-scored.json with
+    #     tier (1/2/3) + priority_score + complexity_flag per page. Tracker consumes this
+    #     to populate Tier/Priority Score/Complexity columns and sort Sheet 1.
+    P.append(dict(
+        name="scorer", where="server",
+        cmd="python3 %s/cc_sp_scorer.py --job %s --out %s/sp-scored.json"
+            % (SRV_PROV, jobDir, jobDir),
+        note="Phase 1 scoring: sp-expect.json -> sp-scored.json (tier+priority per page)."))
+
+    # 3c. notify — Phase 2: send Teams/Telegram message with tier breakdown.
+    #     Informational only — no gate, O/C immediately proceeds.
+    P.append(dict(
+        name="notify", where="server",
+        cmd="python3 %s/cc_sp_notify_plan.py --job %s --config %s" % (SRV_PROV, job, cfgPath),
+        note="Phase 2: tier-breakdown Teams ping (informational, no gate)."))
+
     # 4. image-migrate — ARTICLE path; writes the FULL _map to image-map.json.
     P.append(dict(
         name="image-migrate", where="server",
@@ -243,9 +227,8 @@ def build_plan(cfg):
     #    buildCap gates how many pages are built this run.
     P.append(dict(
         name="compose", where="server",
-        cmd="python3 %s/canvas_compose.py --job %s %s --build-cap %d --heavy-cap %d"
-            % (SRV_PROV, job, sel, cap, hcap),
-        note="articles: sp-expect -> modern canvas; publishes (apply_page) at most buildCap pages."))
+        cmd="python3 %s/cc_sp_batch_runner.py --config %s" % (SRV_PROV, cfgPath),
+        note="Phase 3: tier-ordered batch compose (10/batch); exceptions logged, non-fatal."))
     P.append(dict(
         name="compose", where="server",
         cmd="python3 %s/sp_home_compose.py --job %s --config %s" % (SRV_PROV, job, cfgPath),
@@ -283,7 +266,13 @@ def build_plan(cfg):
         note="T5 xlsx tracker: Sheet1 from site-inventory.json (~480+ rows Active/Archival); "
              "Sheet3 status from qa-verdict-<label>.json gate verdicts."))
 
-    # 9. closeout — server-side; only reached if the gate passed.
+    # 9. handover — Phase 4: compile handover summary + Teams ping.
+    P.append(dict(
+        name="handover", where="server",
+        cmd="python3 %s/cc_sp_handover.py --job %s --config %s" % (SRV_PROV, job, cfgPath),
+        note="Phase 4: sp-handover-summary.json + Teams handover ping."))
+
+    # 10. closeout — server-side; only reached if the gate passed.
     P.append(dict(
         name="closeout", where="server",
         cmd="python3 %s/cc_closeout.py --job %s" % (SRV_PROV, job),
