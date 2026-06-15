@@ -15,7 +15,9 @@ another tenant.
 
 **Level 1 (this rail):** source classic site + isolated build site both live in **our
 codeandcanvas tenant**. The operator supplies the classic **source URL** as a parameter.
-**Level 2** (human devs redeploy the modern build into a client tenant) is OUT OF SCOPE here.
+**Level 2** (deploy the built modern site into the client's own tenant) — see section 9 below.
+`cc_sp_export.py` packages the built pages; `cc_sp_import.py` re-imports into the client tenant.
+Requires the client admin to grant `Sites.Selected` write on their target site (one-time).
 
 Toolkit: `/root/.openclaw/sp-provision/spclient.py` → `from spclient import SP`. App-cert auth
 (Sites.Selected), scoped to BOTH the source site (read) and the build site (write).
@@ -326,6 +328,58 @@ job without `.sp-verified`. Manual dry run: `cc-verify-sp <JOB> --check-only` (e
   the **SPFx rail** (`runbook-sp-build.md`), a later milestone. `create_page` cannot do it.
   Flag it; do not fake an OOTB part inside a text web part.
 - Wrong build site / missing `site.json` → STOP, tell Sukaimi; never guess the target site.
+
+---
+
+## 9. Level 2 — Client-Tenant Redeploy
+
+After the build is gate-verified in our codeandcanvas tenant, the client can receive it in their own SharePoint tenant. This is a Graph-native export→import (no PnP PowerShell, no `.sppkg`).
+
+**One-time client admin action** (before import):
+```powershell
+Install-Module PnP.PowerShell -Scope CurrentUser
+Connect-PnPOnline -Url "https://<client>.sharepoint.com/sites/<site>" -Interactive
+Grant-PnPAzureADAppSitePermission `
+  -AppId "<C&C clientId from config.json>" `
+  -DisplayName "Code&Craft SP Provision" `
+  -Site "https://<client>.sharepoint.com/sites/<site>" `
+  -Permissions Write
+```
+
+Full instructions: `docs/SP_CLIENT_TENANT_GUIDE.md`
+
+**Operator steps:**
+```bash
+# 1. Export built pages to package
+python3 /root/.openclaw/sp-provision/cc_sp_export.py --job JOB####
+
+# 2. Import into client tenant
+python3 /root/.openclaw/sp-provision/cc_sp_import.py \
+  --package /srv/projects/JOB####/sp-export-package/ \
+  --target-site https://<client>.sharepoint.com/sites/<their-site> \
+  --tenant <client-tenant-id>
+
+# Dry-run first:
+python3 /root/.openclaw/sp-provision/cc_sp_import.py ... --dry-run
+```
+
+Or via the mirror driver (add `"includeExport": true` to job.config.json):
+```bash
+cc-sp-mirror --config /srv/projects/JOB####/job.config.json --only export
+```
+
+**What the import does:**
+1. Downloads each image from the build site (using our app cert)
+2. Re-uploads to client Site Assets under `Migrated/<JOB>/`
+3. Rewrites all build-site image URLs in the canvas JSON
+4. POSTs each sitePage to the client site and publishes it
+
+**Troubleshooting:**
+| Error | Cause | Fix |
+|---|---|---|
+| 403 on page POST | Sites.Selected not granted / wrong site URL | Client admin re-runs PowerShell grant |
+| Image 404 after import | Site Assets upload failed | Re-run import (idempotent) |
+| Page already exists | Re-run detected prior partial import | Script PATCHes existing page — safe to re-run |
 
 ---
 

@@ -278,6 +278,15 @@ def build_plan(cfg):
         cmd="python3 %s/cc_closeout.py --job %s" % (SRV_PROV, job),
         note="finalise the job (only after the gate PASSES and tracker is generated)."))
 
+    # 11. export — optional; gated by cfg["includeExport"]. Exports built pages to a
+    #     portable package (sp-export-package/) for client-tenant redeploy.
+    #     Run manually: cc-sp-mirror --config ... --only export
+    if cfg.get("includeExport"):
+        P.append(dict(
+            name="export", where="server",
+            cmd="python3 %s/cc_sp_export.py --job %s" % (SRV_PROV, job),
+            note="Level-2 export: canvasLayout per page + imageMap -> sp-export-package/."))
+
     return P
 
 
