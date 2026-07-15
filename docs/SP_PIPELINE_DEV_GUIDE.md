@@ -85,6 +85,72 @@ touchpoints only: intake form submission + handover sign-off. Zero mid-job gates
 
 ---
 
+## 0a. INTAKE TRIGGER LAYER (before the engineer is ever loaded) — fixed 2026-07-12
+
+Everything above starts only once a JOB exists. That handoff was built (2026-06-11) but never
+actually wired end-to-end — closed 2026-07-12, all fixes verified live (not assumed). Full write-up:
+[[project_sp_intake_automation_fix]] memory. Scripts: `/root/.openclaw/sp-provision/` on the server
+(no git remote there — edited live via SSH; `.bak-*` files left next to each changed script).
+
+```
+client/operator fills "Intake Briefs" SP list -> cc_intake_autorun.py (cron, */5 * * * *)
+   -> CLARIFY hop: cc-intake-clarify + cc-intake-notify ("Awaiting Sign-off" ping)
+   -> client SignedOff + operator Status=Approved -> cc-intake-notify ("Approved" ping)
+   -> AccessVerified=="Verified" gate (see below) -> cc-intake-watch (JOB + Ready card)
+   -> auto-dispatch delivery-lead (`openclaw agent ... --deliver --channel last`)
+```
+
+What was broken and fixed: (1) no cron ever existed for `cc_intake_autorun.py` specifically — the
+one prior success (JOB0022, 06-11) was a manual run, before the `AccessVerified` gate (added 06-14)
+even existed; (2) `cc-intake-notify` existed but nothing called it — wired in, idempotent via
+`_intake_notify_state.json`; (3) `AccessVerified` for item 6 was set from a real, manually-run check
+(never faked) — the server app-cert has no grant on client tenants, so source-site read access is
+checked **Mac-side** via
+`node tools/cc-visual-qa/cc-sp-capture.mjs <source> --job <id> --probe --state ~/.codecraft/verify-<host>.json`
+(per-host delegated session; `verify-codeandcanvas.sharepoint.com.json` covers own-tenant sources);
+(4) `item_web_url()`'s Graph `webUrl` is broken for this list (downloads instead of rendering) — now
+constructs `DispForm.aspx?ID=<id>` directly; (5) the dispatch call was missing `--deliver`, so any
+question the delivery-lead asked (e.g. model profile) never reached any channel — fixed, confirmed
+via a live `deliverySucceeded: true` response.
+
+**⚠️ STILL OPEN — the "Verify" button path is silently broken, cause unconfirmed.** There is a
+SEPARATE, older automated verify system (`cc_verify_bridge.py`, cron `/etc/cron.d/cc-verify-bridge`
+every 3 min, built + "live-proven" 2026-06-14 per [[project_sp_level2_access_model]]) that's
+supposed to do step (3) above automatically: operator clicks "Verify" on the form
+(`VerifyRequested=true`) → bridge enqueues → Mac launchd worker (`cc-verify-watch.mjs`, manually
+loaded per session) captures → bridge reconciles → `AccessVerified=Verified`. Item 6 had
+`VerifyRequested=True` set from creation and matched every enqueue condition in
+`cc_verify_bridge.py` (checked the source — filter is `VerifyRequested truthy AND AccessVerified !=
+Verified AND has SourceSiteURL AND not already queued`), yet was **never enqueued** — no
+`/srv/verify-queue/6.json` ever appeared, `AccessVerified` sat empty (not even "Pending", which the
+enqueue step should have set). The cron IS active (`systemctl is-active cron` = active) and DOES
+process other items (log shows real enqueue/reconcile activity for items 1 and 5) — so this isn't a
+dead cron, something is item-6-specific or timing-specific that wasn't root-caused before this
+session ended. **Before the next real client intake, verify this path actually works** — don't
+assume the manual Mac-probe workaround used for item 6 is the normal path; it was a workaround for
+a bridge that appears to have quietly stopped working for at least this one item.
+
+**Sukaimi's explicit call (2026-07-12): keep auto-dispatch as-is** — JOB creation immediately
+dispatches the delivery-lead; it is NOT operator-gated pending a manual step, despite older
+"operator-gated" wording in the original design doc. That stale wording was corrected everywhere
+(notify message, Kanban card Notes, docstrings).
+
+**Not yet live-fired**: the "Awaiting Sign-off" notify checkpoint (today's test item was already
+Approved when work started) — only code-reviewed + idempotency-tested, not exercised for real.
+
+**One more gap found + fixed same day:** getting a JOB *created* isn't the same as getting it
+*built*. `cc-dispatch-loop-sp` — the supervisor that re-invokes the delivery-lead for each
+subsequent stage (Content Audit → Content Architecture → Wireframes → …) — was disabled a month
+ago (`/etc/cron.d/cc-dispatch-sp` didn't exist; the script itself, `/usr/local/bin/cc-dispatch-loop-sp`,
+was untouched). JOB0026 correctly finished its first card ("do ONE card then STOP" is by design)
+and then sat idle forever with nothing to re-invoke it. Re-enabled per Sukaimi's explicit call
+(`*/5 * * * *`) — the script itself is unchanged and already safe: one card per tick, and it does
+NOT auto-advance past real client gates (content/wireframes/design/staging pause with
+`GATE-PAUSED:`, wait for operator).
+Sukaimi's requested UAT = submit one brand-new form untouched and watch the whole chain fire.
+
+---
+
 ## 1. AUDIT the source classic site (DO THIS FIRST — it derives the deliverable)
 
 Run `sp-audit.py <SOURCE_SITE_URL> --job <JOB>`. It resolves the source site id, reads its
