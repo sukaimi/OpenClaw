@@ -87,7 +87,7 @@ export default function BeforeAfterSlider({
         onPointerMove={onPointerMove}
         onPointerUp={stopDragging}
         onPointerLeave={stopDragging}
-        className="relative aspect-[16/11] w-full touch-none select-none overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface-muted shadow-elevated"
+        className="relative aspect-[3/4] w-full touch-none select-none overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface-muted shadow-elevated sm:aspect-[16/11]"
       >
         {/* Base: modern rebuild */}
         {/* eslint-disable-next-line @next/next/no-img-element */}

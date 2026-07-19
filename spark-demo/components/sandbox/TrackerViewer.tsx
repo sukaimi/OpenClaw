@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import trackerData from "@/fixtures/content-tracker.json";
 import type {
   ContentTrackerRow,
@@ -42,65 +42,136 @@ function StatusPill({ status }: { status: string }) {
 }
 
 const thClass =
-  "sticky top-0 z-10 whitespace-nowrap border-b border-border bg-surface-muted px-3 py-2 text-left text-[12px] font-semibold uppercase tracking-wide text-label";
+  "sticky top-0 z-20 whitespace-nowrap border-b border-border bg-surface-muted px-3 py-2 text-left text-[12px] font-semibold uppercase tracking-wide text-label";
+// First-column header — sticky in both axes (corner), sits above everything.
+const thFirstClass = `${thClass} left-0 z-30 border-r`;
 const tdClass = "border-b border-border px-3 py-2 align-top text-[13px] text-body";
+
+/**
+ * Horizontal-scroll affordance: a right-edge fade that hides once you've
+ * scrolled to the end, plus a small "Scroll" hint (phones). Wraps the
+ * scroll container so sticky headers/columns keep working.
+ */
+function ScrollAffordance({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [atEnd, setAtEnd] = useState(true);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => {
+      const max = el.scrollWidth - el.clientWidth;
+      setAtEnd(max <= 1 || el.scrollLeft >= max - 1);
+    };
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener("scroll", update);
+      ro.disconnect();
+    };
+  }, []);
+
+  return (
+    <div className="relative">
+      <div
+        ref={ref}
+        className="max-h-[440px] overflow-auto rounded-[var(--radius-md)] border border-border"
+      >
+        {children}
+      </div>
+      {/* Right-edge fade — content vanishes when there's more to scroll to */}
+      <div
+        aria-hidden
+        className={`pointer-events-none absolute inset-y-px right-px w-14 rounded-r-[var(--radius-md)] bg-gradient-to-l from-surface to-transparent transition-opacity duration-200 ${
+          atEnd ? "opacity-0" : "opacity-100"
+        }`}
+      />
+      {/* Scroll hint (phones) */}
+      <div
+        aria-hidden
+        className={`pointer-events-none absolute bottom-2.5 right-2.5 rounded-full border border-border bg-surface/90 px-2 py-0.5 text-[11px] font-medium text-body shadow-card backdrop-blur-sm transition-opacity duration-200 sm:hidden ${
+          atEnd ? "opacity-0" : "opacity-100"
+        }`}
+      >
+        Scroll →
+      </div>
+    </div>
+  );
+}
 
 function ContentTrackerTable() {
   const { columns, rows } = tracker.sheets.contentTracker;
+  // Group by page: a non-empty page starts a new group; blank pages continue
+  // the current one. Band alternate groups so the empty cells read as
+  // intentional grouping, not a rendering bug.
+  let group = -1;
+  const grouped = rows.map((r: ContentTrackerRow) => {
+    if (r.page) group++;
+    return { row: r, g: group };
+  });
+
   return (
-    <div className="max-h-[440px] overflow-auto rounded-[var(--radius-md)] border border-border">
+    <ScrollAffordance>
       <table className="w-full min-w-[900px] border-collapse text-left">
         <thead>
           <tr>
-            {columns.map((c) => (
-              <th key={c} className={thClass}>
+            {columns.map((c, ci) => (
+              <th key={c} className={ci === 0 ? thFirstClass : thClass}>
                 {c}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {rows.map((r: ContentTrackerRow, i) => (
-            <tr key={i} className="hover:bg-surface-muted/60">
-              <td className={`${tdClass} whitespace-nowrap text-heading`}>
-                {r.page}
-              </td>
-              <td className={`${tdClass} whitespace-nowrap font-mono text-[11.5px]`}>
-                {r.url}
-              </td>
-              <td className={`${tdClass} whitespace-nowrap`}>{r.section}</td>
-              <td className={`${tdClass} whitespace-nowrap`}>{r.assetType}</td>
-              <td className={`${tdClass} min-w-[160px]`}>{r.description}</td>
-              <td className={`${tdClass} min-w-[220px]`}>{r.content}</td>
-              <td className={`${tdClass} whitespace-nowrap font-mono text-[11.5px]`}>
-                {r.imageRef || "—"}
-              </td>
-              <td className={`${tdClass} whitespace-nowrap font-mono text-[11.5px]`}>
-                {r.hyperlink || "—"}
-              </td>
-              <td className={`${tdClass} min-w-[180px]`}>
-                {r.reviewNotes || "—"}
-              </td>
-              <td className={`${tdClass} whitespace-nowrap`}>
-                <StatusPill status={r.migrationStatus} />
-              </td>
-            </tr>
-          ))}
+          {grouped.map(({ row: r, g }, i) => {
+            const banded = g % 2 === 1;
+            const rowBg = banded ? "bg-surface-muted" : "bg-surface";
+            return (
+              <tr key={i} className={rowBg}>
+                <td
+                  className={`${tdClass} sticky left-0 z-10 whitespace-nowrap border-r border-border font-medium text-heading ${rowBg}`}
+                >
+                  {r.page}
+                </td>
+                <td className={`${tdClass} whitespace-nowrap font-mono text-[11.5px]`}>
+                  {r.url}
+                </td>
+                <td className={`${tdClass} whitespace-nowrap`}>{r.section}</td>
+                <td className={`${tdClass} whitespace-nowrap`}>{r.assetType}</td>
+                <td className={`${tdClass} min-w-[160px]`}>{r.description}</td>
+                <td className={`${tdClass} min-w-[220px]`}>{r.content}</td>
+                <td className={`${tdClass} whitespace-nowrap font-mono text-[11.5px]`}>
+                  {r.imageRef || "—"}
+                </td>
+                <td className={`${tdClass} whitespace-nowrap font-mono text-[11.5px]`}>
+                  {r.hyperlink || "—"}
+                </td>
+                <td className={`${tdClass} min-w-[180px]`}>
+                  {r.reviewNotes || "—"}
+                </td>
+                <td className={`${tdClass} whitespace-nowrap`}>
+                  <StatusPill status={r.migrationStatus} />
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
-    </div>
+    </ScrollAffordance>
   );
 }
 
 function ImageIndexTable() {
   const { columns, rows } = tracker.sheets.imageIndex;
   return (
-    <div className="max-h-[440px] overflow-auto rounded-[var(--radius-md)] border border-border">
+    <ScrollAffordance>
       <table className="w-full min-w-[820px] border-collapse text-left">
         <thead>
           <tr>
-            {columns.map((c) => (
-              <th key={c} className={thClass}>
+            {columns.map((c, ci) => (
+              <th key={c} className={ci === 0 ? thFirstClass : thClass}>
                 {c}
               </th>
             ))}
@@ -109,9 +180,12 @@ function ImageIndexTable() {
         <tbody>
           {rows.map((r: ImageIndexRow, i) => {
             const lowRes = /low/i.test(r.resolution);
+            const rowBg = i % 2 === 1 ? "bg-surface-muted" : "bg-surface";
             return (
-              <tr key={i} className="hover:bg-surface-muted/60">
-                <td className={`${tdClass} whitespace-nowrap font-mono text-[11.5px] text-heading`}>
+              <tr key={i} className={rowBg}>
+                <td
+                  className={`${tdClass} sticky left-0 z-10 whitespace-nowrap border-r border-border font-mono text-[11.5px] text-heading ${rowBg}`}
+                >
                   {r.referenceId}
                 </td>
                 <td className={`${tdClass} whitespace-nowrap font-mono text-[11.5px]`}>
@@ -131,7 +205,7 @@ function ImageIndexTable() {
           })}
         </tbody>
       </table>
-    </div>
+    </ScrollAffordance>
   );
 }
 

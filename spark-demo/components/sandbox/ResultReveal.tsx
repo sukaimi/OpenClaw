@@ -85,7 +85,7 @@ export default function ResultReveal() {
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerLeave={onPointerUp}
-          className="relative aspect-[16/10] w-full touch-none select-none overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface-muted shadow-card"
+          className="relative aspect-[3/4] w-full touch-none select-none overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface-muted shadow-card sm:aspect-[16/10]"
         >
           {/* After (base layer) */}
           {/* eslint-disable-next-line @next/next/no-img-element */}

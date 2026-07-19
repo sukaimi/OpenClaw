@@ -10,13 +10,14 @@
 :root {
   /* Surfaces */
   --background: #ffffff;
-  --surface: #ffffff;
+  --surface: #fbfcfe; /* a hair off pure white so cards read on the page */
   --surface-muted: #f6f9fc;
 
   /* Text */
   --heading: #061b31; /* deep navy — never pure black */
   --label: #273951;
-  --body: #64748d;
+  --body: #4a5568; /* darkened for comfortable AA on white */
+  --body-weight: 400; /* light theme reads too thin at 300 */
 
   /* Brand / interactive */
   --primary: #533afd; /* Stripe purple / indigo */
@@ -29,7 +30,7 @@
   --grad-to: #22d3ee;
 
   /* Hero glow strength — stronger in light so the glow reads on white */
-  --hero-glow-opacity: 0.36;
+  --hero-glow-opacity: 0.42;
 
   /* Decorative accents */
   --accent-magenta: #f96bee;
@@ -42,7 +43,7 @@
   --warn: #d97706;
 
   /* Borders */
-  --border: #e5edf5;
+  --border: #d7e0ea; /* a touch stronger so cards have a defined edge on white */
   --border-strong: #d6d9fc;
 
   /* Radius scale (conservative 4-8px) */
@@ -52,8 +53,9 @@
 
   /* Blue-tinted elevation */
   --shadow-ambient: rgba(23, 23, 23, 0.06) 0px 3px 6px;
-  --shadow-card: rgba(50, 50, 93, 0.12) 0px 15px 35px -12px,
-    rgba(0, 0, 0, 0.08) 0px 8px 20px -8px;
+  --shadow-card: rgba(50, 50, 93, 0.1) 0px 6px 18px -6px,
+    rgba(50, 50, 93, 0.09) 0px 2px 6px -2px,
+    rgba(15, 23, 42, 0.05) 0px 1px 2px 0px;
   --shadow-elevated: rgba(50, 50, 93, 0.25) 0px 30px 45px -30px,
     rgba(0, 0, 0, 0.1) 0px 18px 36px -18px;
 
@@ -74,6 +76,7 @@
     --heading: #f5f8ff;
     --label: #c7d2e8;
     --body: #93a1c0;
+    --body-weight: 300;
 
     --primary: #7c6cff;
     --primary-hover: #9385ff;
@@ -109,6 +112,7 @@
   --heading: #f5f8ff;
   --label: #c7d2e8;
   --body: #93a1c0;
+  --body-weight: 300;
 
   --primary: #7c6cff;
   --primary-hover: #9385ff;
@@ -174,7 +178,7 @@ body {
   background: var(--background);
   color: var(--body);
   font-family: var(--font-sans-stack);
-  font-weight: 300; /* Stripe signature: light weight */
+  font-weight: var(--body-weight, 300); /* 400 in light for AA, 300 in dark */
   font-feature-settings: "ss01";
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.2s ease, color 0.2s ease;
