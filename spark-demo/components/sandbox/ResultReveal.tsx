@@ -136,7 +136,7 @@ export default function ResultReveal() {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           <figure>
-            <div className="aspect-[16/10] w-full overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface-muted shadow-card">
+            <div className="aspect-[3/4] w-full overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface-muted shadow-card sm:aspect-[16/10]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/crestfield/before-home.png"
@@ -149,7 +149,7 @@ export default function ResultReveal() {
             </figcaption>
           </figure>
           <figure>
-            <div className="aspect-[16/10] w-full overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface-muted shadow-card">
+            <div className="aspect-[3/4] w-full overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface-muted shadow-card sm:aspect-[16/10]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/crestfield/after-home.png"

@@ -39,8 +39,9 @@ export default function AgentsSection() {
           Twelve specialists, one assembly line
         </h2>
         <p className="mt-4 text-[16px] leading-[1.5] text-body">
-          Every pipeline stage is run by a dedicated agent — and no agent can
-          self-approve its own work.
+          Twelve agents across thirteen stages — the Builder runs two. Every
+          stage has a dedicated owner, and no agent can self-approve its own
+          work.
         </p>
       </div>
 

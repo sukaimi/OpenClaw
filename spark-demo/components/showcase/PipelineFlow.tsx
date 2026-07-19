@@ -92,8 +92,32 @@ function DesktopRow({ row, startIndex }: { row: Stage[]; startIndex: number }) {
   );
 }
 
+/** Full-width finale bar for the closeout stage, spanning the grid. */
+function CloseoutBar({ stage, index }: { stage: Stage; index: number }) {
+  return (
+    <div className="flex items-center gap-4 rounded-[var(--radius-lg)] border border-border bg-surface-muted p-4 shadow-card">
+      <span className="inline-flex h-9 w-9 flex-none items-center justify-center rounded-full spark-gradient-bg text-[14px] font-normal text-white [font-feature-settings:'tnum']">
+        {index + 1}
+      </span>
+      <div className="min-w-0 flex-1">
+        <h3 className="text-[15px] leading-tight tracking-[-0.01em] text-heading">
+          {stage.label}
+        </h3>
+        <p className="mt-0.5 text-[13px] leading-[1.45] text-body">
+          {stage.description}
+        </p>
+      </div>
+      <div className="flex-none">
+        <AgentTag agent={stage.agent} />
+      </div>
+    </div>
+  );
+}
+
 export default function PipelineFlow() {
-  const rows = chunk(stages, 4);
+  const gridStages = stages.slice(0, 12);
+  const closeout = stages[12];
+  const rows = chunk(gridStages, 4);
 
   return (
     <section id="pipeline" className="scroll-mt-24 py-20">
@@ -111,11 +135,12 @@ export default function PipelineFlow() {
         </p>
       </div>
 
-      {/* Desktop: horizontal connected rows */}
+      {/* Desktop: horizontal connected rows + full-width closeout finale */}
       <div className="mt-14 hidden flex-col gap-8 lg:flex">
         {rows.map((row, r) => (
           <DesktopRow key={r} row={row} startIndex={r * 4} />
         ))}
+        {closeout ? <CloseoutBar stage={closeout} index={12} /> : null}
       </div>
 
       {/* Mobile / tablet: vertical timeline with continuous left rail */}

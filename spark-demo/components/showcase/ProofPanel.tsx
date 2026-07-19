@@ -47,6 +47,11 @@ export default function ProofPanel() {
             dropped assets
           </p>
 
+          <p className="mx-auto mt-3 max-w-[440px] text-[13px] leading-[1.5] text-label">
+            Copy fidelity = a deterministic diff of every source content zone
+            against the rebuild — 1.00 means nothing was dropped.
+          </p>
+
           <p className="mx-auto mt-6 max-w-[520px] text-[16px] leading-[1.55] text-body">
             The fail-closed verify gate diffed every rebuilt page against the
             source and opened only on a full content match.

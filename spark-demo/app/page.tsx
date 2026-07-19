@@ -61,9 +61,17 @@ export default function Home() {
             Replay the full autonomous rebuild — capture, score, compose, and
             the fail-closed verify gate — in the live sandbox.
           </p>
-          <div className="mt-8 flex justify-center">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button href="/sandbox" variant="gradient">
               Try the sandbox →
+            </Button>
+            <Button
+              href="https://github.com/sukaimi/OpenClaw"
+              variant="ghost"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View the source on GitHub →
             </Button>
           </div>
         </div>
