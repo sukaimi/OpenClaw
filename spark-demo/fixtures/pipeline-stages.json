@@ -10,7 +10,7 @@
       "id": "intake",
       "label": "Intake",
       "description": "Parse the client request, open the job card, and lock the run scope.",
-      "agent": "cc-intake",
+      "agent": "Intake Clerk",
       "durationMs": 1800,
       "logs": [
         "Job DEMO-0022 opened for Crestfield Foods International",
@@ -22,7 +22,7 @@
       "id": "verify-access",
       "label": "Verify Access",
       "description": "Preflight the source and target tenants before any read or write.",
-      "agent": "cc-preflight-sp",
+      "agent": "Gatekeeper",
       "durationMs": 2600,
       "logs": [
         "Delegated session verify-contoso.json validated",
@@ -34,7 +34,7 @@
       "id": "capture-classic",
       "label": "Capture Classic",
       "description": "Crawl the classic site and snapshot every page, zone, and asset.",
-      "agent": "cc-sp-capture",
+      "agent": "Scout",
       "durationMs": 5200,
       "logs": [
         "Crawled 16 classic pages across 5 hubs",
@@ -46,7 +46,7 @@
       "id": "audit",
       "label": "Audit",
       "description": "Build the content tracker: classify every asset and log pain-points.",
-      "agent": "cc-sp-audit",
+      "agent": "Auditor",
       "durationMs": 4100,
       "logs": [
         "48 content rows classified across Content Tracker",
@@ -58,7 +58,7 @@
       "id": "score-tier",
       "label": "Score & Tier",
       "description": "Score each page by reach and freshness, then bucket into 3 tiers.",
-      "agent": "cc-sp-score",
+      "agent": "Strategist",
       "durationMs": 2400,
       "logs": [
         "Signals: inbound links, days-since-modified, source text length",
@@ -70,7 +70,7 @@
       "id": "notify",
       "label": "Notify",
       "description": "Post the tiered plan to Teams and ping the operator for the go-ahead.",
-      "agent": "cc-notify-operator",
+      "agent": "Liaison",
       "durationMs": 1500,
       "logs": [
         "Handover plan posted to Teams · SPARK channel",
@@ -82,7 +82,7 @@
       "id": "migrate-images",
       "label": "Migrate Images",
       "description": "Upload usable images; flag low-res ones for rewrite or SVG swap.",
-      "agent": "cc-sp-assets",
+      "agent": "Image Handler",
       "durationMs": 4300,
       "logs": [
         "9 images processed from Image Index",
@@ -94,7 +94,7 @@
       "id": "compose-pages",
       "label": "Compose Pages",
       "description": "Rebuild each interior page as modern web-part sections.",
-      "agent": "cc-sp-mirror",
+      "agent": "Builder",
       "durationMs": 6800,
       "logs": [
         "Composed 15 interior pages from tracker rows",
@@ -106,7 +106,7 @@
       "id": "compose-homepage",
       "label": "Compose Homepage",
       "description": "Assemble the flagship homepage with hero, news carousel, and nav.",
-      "agent": "cc-sp-mirror",
+      "agent": "Builder",
       "durationMs": 5400,
       "logs": [
         "Hero: 'Crestfield Foods International — Global Intranet Portal'",
@@ -118,7 +118,7 @@
       "id": "style-brand",
       "label": "Style & Brand",
       "description": "Apply the Crestfield theme, fonts, and 'Good Food, Every Day' voice.",
-      "agent": "cc-sp-theme",
+      "agent": "Stylist",
       "durationMs": 3200,
       "logs": [
         "Brand theme applied · tagline 'Good Food, Every Day'",
@@ -130,7 +130,7 @@
       "id": "verify-gate",
       "label": "Verify Gate",
       "description": "Fail-closed completeness gate: diff composed pages against the source. The agent cannot self-close — the gate decides.",
-      "agent": "cc-verify-sp",
+      "agent": "Inspector",
       "durationMs": 4800,
       "isGate": true,
       "failClosed": true,
@@ -145,7 +145,7 @@
       "id": "content-tracker",
       "label": "Content Tracker",
       "description": "Stamp final migration status per row and export the tracker workbook.",
-      "agent": "cc-sp-tracker",
+      "agent": "Registrar",
       "durationMs": 2200,
       "logs": [
         "Status stamped: 30 Migrate · 9 Rewrite · 5 Review · 4 Archive",
@@ -157,7 +157,7 @@
       "id": "handover-closeout",
       "label": "Handover & Closeout",
       "description": "Deliver the report, ping the operator, and close the job card.",
-      "agent": "cc-notify-closed",
+      "agent": "Closer",
       "durationMs": 1300,
       "logs": [
         "Handover report delivered to operator",

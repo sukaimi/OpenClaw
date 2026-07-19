@@ -10,17 +10,14 @@ function AgentCard({ agent }: { agent: Agent }) {
           : "border-border bg-surface shadow-card"
       }`}
     >
-      <div className="flex items-center justify-between gap-2">
-        <span className="inline-block rounded-[var(--radius-sm)] bg-surface-muted px-2 py-0.5 font-mono text-[11px] tracking-tight text-label">
-          {agent.id}
-        </span>
-        {special ? (
+      {special ? (
+        <div className="flex items-center justify-end gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] bg-primary/10 px-2 py-0.5 text-[11px] font-normal text-primary ring-1 ring-primary/30">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             verify gate
           </span>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
       <h3 className="mt-3 text-[17px] font-semibold leading-tight tracking-[-0.01em] text-heading">
         {agent.role}
       </h3>
@@ -49,7 +46,7 @@ export default function AgentsSection() {
 
       <div className="mt-12 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
         {agents.map((agent) => (
-          <AgentCard key={agent.id} agent={agent} />
+          <AgentCard key={agent.role} agent={agent} />
         ))}
       </div>
     </section>
