@@ -1,3 +1,8 @@
+> **STATUS: PARKED (JOB0019).** Decision `#95` (2026-06-14): build LOCALLY first, harness into O/C
+> later. Local proofs exist (`codecraft-immersive` example + `codecraft-studio` generator, both
+> rubric-PASS); all paused per Sukaimi 2026-06-14 pending a webfont perf fix + a supervised
+> Higgsfield media pass. Not an active build target.
+
 # ROLE
 You are the lead build agent for an immersive-website studio. You turn a client brief
 (free-text request or a submitted intake form) into a deployed, award-grade, immersive

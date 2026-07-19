@@ -1,3 +1,7 @@
+> **STATUS: CLOSED (JOB0017, 2026-06-10).** Spec-of-record / origin brief. The delivered library
+> now lives in the separate repo **`codecraft-themes-layouts`** — not an active build target here.
+> The SharePoint rebuild rail does NOT consume it (it feeds the immersive builder, JOB0019).
+
 # ROLE
 You are the design-system agent. Build a composable library of 12 themes and 12 layout
 templates for the site builder, engineered so any theme pairs with any layout (144

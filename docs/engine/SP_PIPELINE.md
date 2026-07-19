@@ -1,5 +1,8 @@
 # Runbook — SharePoint CLASSIC → MODERN Conversion Rail (Graph / spclient.py)
 
+_The engine of **SPARK v1** (SharePoint Autonomous Rebuild Kit) — the live headline rail. All 10
+agents run **DeepSeek V4** (Profile A `deepseek-v4-flash` / `deepseek-v4-pro`)._
+
 **Audience:** the OpenClaw engineer agent, loaded per-job by the delivery-lead when a job is a
 SharePoint **conversion** (`brief.json.type: sp_convert` / `sharepoint`).
 **Replaces** `runbook-sp-pages.md` for conversion jobs. (The greenfield pages runbook built
@@ -15,9 +18,9 @@ another tenant.
 
 **Level 1 (this rail):** source classic site + isolated build site both live in **our
 codeandcanvas tenant**. The operator supplies the classic **source URL** as a parameter.
-**Level 2** (deploy the built modern site into the client's own tenant) — see section 9 below.
-`cc_sp_export.py` packages the built pages; `cc_sp_import.py` re-imports into the client tenant.
-Requires the client admin to grant `Sites.Selected` write on their target site (one-time).
+**Level 2** (deploy the built modern site into the client's own tenant) — a **manual dev handover**,
+not an automated step; see section 9 below and `docs/engine/SP_CLIENT_TENANT.md`.
+Requires the client admin to grant `Sites.Selected` write (or SCA) on their target site (one-time).
 
 Toolkit: `/root/.openclaw/sp-provision/spclient.py` → `from spclient import SP`. App-cert auth
 (Sites.Selected), scoped to BOTH the source site (read) and the build site (write).
@@ -85,7 +88,7 @@ touchpoints only: intake form submission + handover sign-off. Zero mid-job gates
 
 ---
 
-## 0a. INTAKE TRIGGER LAYER (before the engineer is ever loaded) — fixed 2026-07-12
+## 0a. INTAKE TRIGGER LAYER (before the engineer is ever loaded)
 
 Everything above starts only once a JOB exists. That handoff was built (2026-06-11) but never
 actually wired end-to-end — closed 2026-07-12, all fixes verified live (not assumed). Full write-up:
@@ -397,55 +400,16 @@ job without `.sp-verified`. Manual dry run: `cc-verify-sp <JOB> --check-only` (e
 
 ---
 
-## 9. Level 2 — Client-Tenant Redeploy
+## 9. Level 2 — Client-Tenant Deployment
 
-After the build is gate-verified in our codeandcanvas tenant, the client can receive it in their own SharePoint tenant. This is a Graph-native export→import (no PnP PowerShell, no `.sppkg`).
+After the build is gate-verified in the C&C build tenant, the client receives it in their own
+SharePoint tenant. This is **not** an automated pipeline step — it's a **manual dev handover**:
+the client reviews via screenshare, and on approval a C&C developer deploys the pages into the
+client tenant (Graph-native page recreate + image migration + branding; no PnP `.sppkg`).
 
-**One-time client admin action** (before import):
-```powershell
-Install-Module PnP.PowerShell -Scope CurrentUser
-Connect-PnPOnline -Url "https://<client>.sharepoint.com/sites/<site>" -Interactive
-Grant-PnPAzureADAppSitePermission `
-  -AppId "<C&C clientId from config.json>" `
-  -DisplayName "Code&Craft SP Provision" `
-  -Site "https://<client>.sharepoint.com/sites/<site>" `
-  -Permissions Write
-```
-
-Full instructions: `docs/SP_CLIENT_TENANT_GUIDE.md`
-
-**Operator steps:**
-```bash
-# 1. Export built pages to package
-python3 /root/.openclaw/sp-provision/cc_sp_export.py --job JOB####
-
-# 2. Import into client tenant
-python3 /root/.openclaw/sp-provision/cc_sp_import.py \
-  --package /srv/projects/JOB####/sp-export-package/ \
-  --target-site https://<client>.sharepoint.com/sites/<their-site> \
-  --tenant <client-tenant-id>
-
-# Dry-run first:
-python3 /root/.openclaw/sp-provision/cc_sp_import.py ... --dry-run
-```
-
-Or via the mirror driver (add `"includeExport": true` to job.config.json):
-```bash
-cc-sp-mirror --config /srv/projects/JOB####/job.config.json --only export
-```
-
-**What the import does:**
-1. Downloads each image from the build site (using our app cert)
-2. Re-uploads to client Site Assets under `Migrated/<JOB>/`
-3. Rewrites all build-site image URLs in the canvas JSON
-4. POSTs each sitePage to the client site and publishes it
-
-**Troubleshooting:**
-| Error | Cause | Fix |
-|---|---|---|
-| 403 on page POST | Sites.Selected not granted / wrong site URL | Client admin re-runs PowerShell grant |
-| Image 404 after import | Site Assets upload failed | Re-run import (idempotent) |
-| Page already exists | Re-run detected prior partial import | Script PATCHes existing page — safe to re-run |
+**Sole owner of the how-to: `docs/engine/SP_CLIENT_TENANT.md`** — the full dev handover guide
+(access grant, page recreation with `@odata.*` strip, image migration, branding, verify, and the
+canvasLayout export reference). Do not duplicate those steps here.
 
 ---
 
@@ -458,7 +422,7 @@ cc-sp-mirror --config /srv/projects/JOB####/job.config.json --only export
   using only Graph provisioning the team already has.
 
 
-## IMAGE MIGRATION (added 2026-06-11) -- carry the source's brand/logo imagery
+## IMAGE MIGRATION -- carry the source's brand/logo imagery
 
 The audit now captures each page's `images[]` ({src, filename, alt}) from the classic source's WikiField/CanvasContent1 `<img>` tags. `create_page` accepts inner HTML INCLUDING `<img>`, so the modern page CAN show the original imagery -- but the `<img src>` must point at an asset on the BUILD site (the source server-relative URL is the wrong tenant/path).
 
@@ -485,7 +449,7 @@ The build is NO LONGER text-only: it MUST emit `<img>` tags for the migrated ima
 
 ---
 
-## MODERN COMPOSER + NATIVE WEB PARTS (added 2026-06-12) -- the polished build path
+## MODERN COMPOSER + NATIVE WEB PARTS -- the polished build path
 
 The page REBUILD (sec 3) is now done by **`canvas_compose.py`**, which authors a real modern
 `canvasLayout` (multi-column sections + NATIVE web parts) instead of one stripped text blob. Run it
