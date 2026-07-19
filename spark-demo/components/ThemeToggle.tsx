@@ -14,7 +14,7 @@ function getInitialTheme(): Theme {
 }
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("dark");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function ThemeToggle() {
     >
       {/* Render a stable icon until mounted to avoid hydration mismatch */}
       <span suppressHydrationWarning className="text-[15px] leading-none">
-        {mounted ? (isDark ? "☀" : "☾") : "☾"}
+        {mounted ? (isDark ? "☀" : "☾") : "☀"}
       </span>
     </button>
   );

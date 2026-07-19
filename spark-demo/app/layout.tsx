@@ -65,10 +65,10 @@ const themeScript = `
 (function () {
   try {
     var t = localStorage.getItem('spark-theme');
-    if (t === 'light' || t === 'dark') {
-      document.documentElement.setAttribute('data-theme', t);
-    }
-  } catch (e) {}
+    document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
 })();
 `;
 
