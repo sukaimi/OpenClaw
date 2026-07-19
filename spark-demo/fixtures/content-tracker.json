@@ -1,0 +1,834 @@
+{
+  "meta": {
+    "client": "Crestfield Foods International",
+    "sourceFile": "Crestfield_Content_Tracker_v1.0.xlsx",
+    "derivedFrom": "OpenClaw JOB0022 classic\u2192modern SharePoint run",
+    "note": "Canned demo fixture. All data fictional/rebranded. No real client references.",
+    "statusCounts": {
+      "Rewrite": 9,
+      "Migrate": 30,
+      "Review": 5,
+      "Archive": 4
+    }
+  },
+  "statusColors": {
+    "Migrate": {
+      "token": "green",
+      "hex": "#16a34a",
+      "label": "Migrate"
+    },
+    "Review": {
+      "token": "blue",
+      "hex": "#2563eb",
+      "label": "Review"
+    },
+    "Rewrite": {
+      "token": "amber",
+      "hex": "#d97706",
+      "label": "Rewrite"
+    },
+    "Archive": {
+      "token": "red",
+      "hex": "#dc2626",
+      "label": "Archive"
+    }
+  },
+  "sheets": {
+    "contentTracker": {
+      "columns": [
+        "Page",
+        "Page URL",
+        "Section",
+        "Asset Type",
+        "Description",
+        "Content",
+        "Image Ref",
+        "Hyperlink",
+        "Review Notes",
+        "Migration Status"
+      ],
+      "rows": [
+        {
+          "page": "Homepage",
+          "pageGroup": "HOMEPAGE",
+          "url": "/sites/ClassicIntranet",
+          "section": "Top Navigation",
+          "assetType": "Logo",
+          "description": "Company logo",
+          "content": "Crestfield Foods \u2014 GOOD FOOD, EVERY DAY",
+          "imageRef": "IMG_001_logo.png",
+          "hyperlink": "",
+          "reviewNotes": "Pixelated at 2x \u2014 replace with SVG",
+          "migrationStatus": "Rewrite"
+        },
+        {
+          "page": "",
+          "pageGroup": "HOMEPAGE",
+          "url": "",
+          "section": "Top Navigation",
+          "assetType": "Nav Item",
+          "description": "Menu Item 1",
+          "content": "Corporate Sites",
+          "imageRef": "",
+          "hyperlink": "",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "HOMEPAGE",
+          "url": "",
+          "section": "Top Navigation",
+          "assetType": "Nav Item",
+          "description": "Menu Item 2",
+          "content": "Functions",
+          "imageRef": "",
+          "hyperlink": "",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "HOMEPAGE",
+          "url": "",
+          "section": "Top Navigation",
+          "assetType": "Nav Item",
+          "description": "Menu Item 3",
+          "content": "Region / Country Sites",
+          "imageRef": "",
+          "hyperlink": "",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "HOMEPAGE",
+          "url": "",
+          "section": "Top Navigation",
+          "assetType": "Search Box",
+          "description": "Classic keyword search",
+          "content": "Search this site\u2026",
+          "imageRef": "",
+          "hyperlink": "",
+          "reviewNotes": "Replace with Amazon Q conversational search",
+          "migrationStatus": "Rewrite"
+        },
+        {
+          "page": "",
+          "pageGroup": "HOMEPAGE",
+          "url": "",
+          "section": "Hero Banner",
+          "assetType": "Image",
+          "description": "Page hero",
+          "content": "Static banner \u2014 Global Sales Conference 2026",
+          "imageRef": "IMG_002_hero_homepage.jpg",
+          "hyperlink": "",
+          "reviewNotes": "Low resolution \u2014 source original from brand library",
+          "migrationStatus": "Rewrite"
+        },
+        {
+          "page": "",
+          "pageGroup": "HOMEPAGE",
+          "url": "",
+          "section": "Hero Banner",
+          "assetType": "Headline",
+          "description": "Hero headline",
+          "content": "Our 2030 Commitment",
+          "imageRef": "",
+          "hyperlink": "",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "HOMEPAGE",
+          "url": "",
+          "section": "Hero Banner",
+          "assetType": "Body Text",
+          "description": "Hero subtext",
+          "content": "100% recyclable packaging by 2030. See the roadmap and progress dashboard.",
+          "imageRef": "",
+          "hyperlink": "",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "HOMEPAGE",
+          "url": "",
+          "section": "Hero Banner",
+          "assetType": "CTA Button",
+          "description": "Hero call to action",
+          "content": "Read Report \u2192",
+          "imageRef": "",
+          "hyperlink": "/sites/ClassicIntranet/Documents/2030-report.pdf",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "HOMEPAGE",
+          "url": "",
+          "section": "News Feed",
+          "assetType": "News Article",
+          "description": "News item 1",
+          "content": "Veldt Chocolate Launches New Campaign",
+          "imageRef": "IMG_003_news_1.jpg",
+          "hyperlink": "/sites/ClassicIntranet/Pages/news-veldt.aspx",
+          "reviewNotes": "No freshness date \u2014 stale risk",
+          "migrationStatus": "Review"
+        },
+        {
+          "page": "",
+          "pageGroup": "HOMEPAGE",
+          "url": "",
+          "section": "News Feed",
+          "assetType": "News Article",
+          "description": "News item 2",
+          "content": "APAC Q1 Marketing Dashboard",
+          "imageRef": "IMG_004_news_2.jpg",
+          "hyperlink": "/sites/ClassicIntranet/Pages/news-apac-q1.aspx",
+          "reviewNotes": "Published Feb 2024 \u2014 possibly stale",
+          "migrationStatus": "Review"
+        },
+        {
+          "page": "",
+          "pageGroup": "HOMEPAGE",
+          "url": "",
+          "section": "News Feed",
+          "assetType": "News Article",
+          "description": "News item 3",
+          "content": "Solara Snacks SEA Distribution Partnership",
+          "imageRef": "IMG_005_news_3.jpg",
+          "hyperlink": "/sites/ClassicIntranet/Pages/news-solara.aspx",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "HOMEPAGE",
+          "url": "",
+          "section": "Quick Links",
+          "assetType": "Link",
+          "description": "Quick link 1",
+          "content": "Employee Center",
+          "imageRef": "",
+          "hyperlink": "/sites/ClassicIntranet/Pages/employee-center.aspx",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "HOMEPAGE",
+          "url": "",
+          "section": "Quick Links",
+          "assetType": "Link",
+          "description": "Quick link 2",
+          "content": "T&E",
+          "imageRef": "",
+          "hyperlink": "https://workday.crestfield.com/te",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "HOMEPAGE",
+          "url": "",
+          "section": "Quick Links",
+          "assetType": "Link",
+          "description": "Quick link 3",
+          "content": "Technology Center",
+          "imageRef": "",
+          "hyperlink": "/sites/ClassicIntranet/Pages/tech-center.aspx",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "HOMEPAGE",
+          "url": "",
+          "section": "Quick Links",
+          "assetType": "Link",
+          "description": "Quick link 4",
+          "content": "Compliance Line",
+          "imageRef": "",
+          "hyperlink": "/sites/ClassicIntranet/Pages/compliance.aspx",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "HOMEPAGE",
+          "url": "",
+          "section": "Footer",
+          "assetType": "Logo",
+          "description": "Footer company logo",
+          "content": "Crestfield Foods International \u2014 GOOD FOOD, EVERY DAY",
+          "imageRef": "IMG_001_logo.png",
+          "hyperlink": "",
+          "reviewNotes": "Same as header \u2014 use same SVG asset",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "Employee Center",
+          "pageGroup": "EMPLOYEE CENTER",
+          "url": "/sites/ClassicIntranet/Pages/employee-center.aspx",
+          "section": "Page Header",
+          "assetType": "Page Title",
+          "description": "Main heading",
+          "content": "Employee Center",
+          "imageRef": "",
+          "hyperlink": "",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "EMPLOYEE CENTER",
+          "url": "",
+          "section": "Page Header",
+          "assetType": "Body Text",
+          "description": "Page description",
+          "content": "Your single destination for HR services, pay, benefits, leave, and people policies.",
+          "imageRef": "",
+          "hyperlink": "",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "EMPLOYEE CENTER",
+          "url": "",
+          "section": "Document Library",
+          "assetType": "Document",
+          "description": "HR document 1",
+          "content": "Global Employee Handbook 2026",
+          "imageRef": "IMG_006_doc_pdf.png",
+          "hyperlink": "/sites/ClassicIntranet/Documents/handbook-2026.pdf",
+          "reviewNotes": "Current \u2014 verified Jan 2026",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "EMPLOYEE CENTER",
+          "url": "",
+          "section": "Document Library",
+          "assetType": "Document",
+          "description": "HR document 2",
+          "content": "Leave Request Form",
+          "imageRef": "",
+          "hyperlink": "/sites/ClassicIntranet/Documents/leave-form.docx",
+          "reviewNotes": "Current",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "EMPLOYEE CENTER",
+          "url": "",
+          "section": "Document Library",
+          "assetType": "Document",
+          "description": "HR document 3",
+          "content": "Benefits Guide APAC 2026",
+          "imageRef": "IMG_006_doc_pdf.png",
+          "hyperlink": "/sites/ClassicIntranet/Documents/benefits-apac.pdf",
+          "reviewNotes": "Current \u2014 verified Jan 2026",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "EMPLOYEE CENTER",
+          "url": "",
+          "section": "Document Library",
+          "assetType": "Document",
+          "description": "HR document 4",
+          "content": "Expense Report Template v4",
+          "imageRef": "",
+          "hyperlink": "/sites/ClassicIntranet/Documents/expense-v4.xlsx",
+          "reviewNotes": "Current",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "EMPLOYEE CENTER",
+          "url": "",
+          "section": "Document Library",
+          "assetType": "Document",
+          "description": "HR document 5",
+          "content": "Contractor Policy EMEA 2024",
+          "imageRef": "IMG_006_doc_pdf.png",
+          "hyperlink": "/sites/ClassicIntranet/Documents/contractor-policy-emea.pdf",
+          "reviewNotes": "Published Oct 2025 \u2014 78 days old \u2014 approaching review",
+          "migrationStatus": "Review"
+        },
+        {
+          "page": "",
+          "pageGroup": "EMPLOYEE CENTER",
+          "url": "",
+          "section": "Document Library",
+          "assetType": "Document",
+          "description": "HR document 6",
+          "content": "Parental Leave Guide 2023",
+          "imageRef": "",
+          "hyperlink": "/sites/ClassicIntranet/Documents/parental-leave-2023.docx",
+          "reviewNotes": "STALE \u2014 published Mar 2023 \u2014 owner must review",
+          "migrationStatus": "Archive"
+        },
+        {
+          "page": "",
+          "pageGroup": "EMPLOYEE CENTER",
+          "url": "",
+          "section": "Content Zone",
+          "assetType": "Text Block",
+          "description": "Category description",
+          "content": "Pay & Benefits \u2014 access payslips, pension, and salary review",
+          "imageRef": "",
+          "hyperlink": "",
+          "reviewNotes": "No navigation structure \u2014 users must scroll",
+          "migrationStatus": "Rewrite"
+        },
+        {
+          "page": "",
+          "pageGroup": "EMPLOYEE CENTER",
+          "url": "",
+          "section": "Content Zone",
+          "assetType": "Text Block",
+          "description": "Category description",
+          "content": "Leave & Time \u2014 submit leave, view holiday calendar, flexible working",
+          "imageRef": "",
+          "hyperlink": "",
+          "reviewNotes": "No navigation structure \u2014 users must scroll",
+          "migrationStatus": "Rewrite"
+        },
+        {
+          "page": "APAC Regional Hub",
+          "pageGroup": "APAC REGIONAL HUB",
+          "url": "/sites/ClassicIntranet/Pages/apac-hub.aspx",
+          "section": "Page Header",
+          "assetType": "Page Title",
+          "description": "Main heading",
+          "content": "APAC \u2014 Good Food, Every Day",
+          "imageRef": "",
+          "hyperlink": "",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "APAC REGIONAL HUB",
+          "url": "",
+          "section": "Page Header",
+          "assetType": "Subheading",
+          "description": "Regional tagline",
+          "content": "12 markets \u00b7 Singapore \u00b7 Malaysia \u00b7 Vietnam \u00b7 Thailand \u00b7 Indonesia \u00b7 Philippines \u00b7 Australia \u00b7 Japan \u00b7 South Korea \u00b7 India \u00b7 China \u00b7 Hong Kong",
+          "imageRef": "",
+          "hyperlink": "",
+          "reviewNotes": "Plain text \u2014 no interactive country navigation",
+          "migrationStatus": "Rewrite"
+        },
+        {
+          "page": "",
+          "pageGroup": "APAC REGIONAL HUB",
+          "url": "",
+          "section": "Leadership Zone",
+          "assetType": "Text Block",
+          "description": "Leadership message",
+          "content": "Message from Wei Chen \u2014 APAC President: Q1 results exceeded expectations across all 12 markets\u2026",
+          "imageRef": "IMG_007_wei_chen.jpg",
+          "hyperlink": "",
+          "reviewNotes": "No SLA badge \u2014 unknown publish date \u2014 may be stale",
+          "migrationStatus": "Review"
+        },
+        {
+          "page": "",
+          "pageGroup": "APAC REGIONAL HUB",
+          "url": "",
+          "section": "News Feed",
+          "assetType": "News Article",
+          "description": "Regional news 1",
+          "content": "Solara Snacks achieves category leadership in SEA",
+          "imageRef": "IMG_008_apac_news_1.jpg",
+          "hyperlink": "/sites/ClassicIntranet/Pages/apac-news-solara.aspx",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "APAC REGIONAL HUB",
+          "url": "",
+          "section": "News Feed",
+          "assetType": "News Article",
+          "description": "Regional news 2",
+          "content": "APAC Digital Series: Future of food retail in Asia",
+          "imageRef": "IMG_009_apac_news_2.jpg",
+          "hyperlink": "/sites/ClassicIntranet/Pages/apac-digital.aspx",
+          "reviewNotes": "Published Feb 2025 \u2014 over 12 months old",
+          "migrationStatus": "Archive"
+        },
+        {
+          "page": "",
+          "pageGroup": "APAC REGIONAL HUB",
+          "url": "",
+          "section": "Calendar",
+          "assetType": "Event",
+          "description": "Calendar event 1",
+          "content": "APAC Q1 Kick-off Town Hall \u2014 1 March 2026",
+          "imageRef": "",
+          "hyperlink": "/sites/ClassicIntranet/Pages/events.aspx",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "APAC REGIONAL HUB",
+          "url": "",
+          "section": "Calendar",
+          "assetType": "Event",
+          "description": "Calendar event 2",
+          "content": "International Women's Day APAC \u2014 14 March 2026",
+          "imageRef": "",
+          "hyperlink": "/sites/ClassicIntranet/Pages/events.aspx",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "APAC REGIONAL HUB",
+          "url": "",
+          "section": "Calendar",
+          "assetType": "Event",
+          "description": "Calendar event 3",
+          "content": "Solara Snacks SEA Campaign Launch \u2014 27 March 2026",
+          "imageRef": "",
+          "hyperlink": "/sites/ClassicIntranet/Pages/events.aspx",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "Procurement",
+          "pageGroup": "PROCUREMENT",
+          "url": "/sites/ClassicIntranet/Pages/procurement.aspx",
+          "section": "Page Header",
+          "assetType": "Page Title",
+          "description": "Main heading",
+          "content": "Procurement \u2014 Better Together Sourcing",
+          "imageRef": "",
+          "hyperlink": "",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "PROCUREMENT",
+          "url": "",
+          "section": "Navigation",
+          "assetType": "Nav Bar",
+          "description": "Local navigation",
+          "content": "15+ items across 2 navigation bars \u2014 Home, About, Policies, Procedures, Tools, Systems, Forms, Guidelines, Contacts, Region, APAC, EMEA, NA, LatAm, Archive",
+          "imageRef": "",
+          "hyperlink": "",
+          "reviewNotes": "CRITICAL \u2014 15+ nav items \u2014 causes PP-001 findability failure \u2014 reduce to 6",
+          "migrationStatus": "Rewrite"
+        },
+        {
+          "page": "",
+          "pageGroup": "PROCUREMENT",
+          "url": "",
+          "section": "Content Zone",
+          "assetType": "Text Block",
+          "description": "Section description",
+          "content": "Your gateway to procurement tools, supplier management, and sourcing resources.",
+          "imageRef": "",
+          "hyperlink": "",
+          "reviewNotes": "No intent path structure \u2014 users cannot self-navigate to goal",
+          "migrationStatus": "Rewrite"
+        },
+        {
+          "page": "",
+          "pageGroup": "PROCUREMENT",
+          "url": "",
+          "section": "Resources",
+          "assetType": "Link",
+          "description": "Resource link 1",
+          "content": "Buyers Portal",
+          "imageRef": "",
+          "hyperlink": "https://buyers.crestfield.com",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "PROCUREMENT",
+          "url": "",
+          "section": "Resources",
+          "assetType": "Link",
+          "description": "Resource link 2",
+          "content": "Global Supplier Hub",
+          "imageRef": "",
+          "hyperlink": "https://suppliers.crestfield.com",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "PROCUREMENT",
+          "url": "",
+          "section": "Resources",
+          "assetType": "Link",
+          "description": "Resource link 3",
+          "content": "Source to Pay",
+          "imageRef": "",
+          "hyperlink": "https://s2p.crestfield.com",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "PROCUREMENT",
+          "url": "",
+          "section": "Resources",
+          "assetType": "Link",
+          "description": "Resource link 4",
+          "content": "Starmind Infosite",
+          "imageRef": "",
+          "hyperlink": "https://starmind.crestfield.com",
+          "reviewNotes": "BROKEN LINK \u2014 URL returns 404",
+          "migrationStatus": "Archive"
+        },
+        {
+          "page": "Global Policy Center",
+          "pageGroup": "GLOBAL POLICY CENTER",
+          "url": "/sites/ClassicIntranet/Pages/policy-center.aspx",
+          "section": "Page Header",
+          "assetType": "Page Title",
+          "description": "Main heading",
+          "content": "Global Policy Center",
+          "imageRef": "",
+          "hyperlink": "",
+          "reviewNotes": "",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "GLOBAL POLICY CENTER",
+          "url": "",
+          "section": "Document Library",
+          "assetType": "Document",
+          "description": "Policy document 1",
+          "content": "Code of Conduct 2026",
+          "imageRef": "IMG_006_doc_pdf.png",
+          "hyperlink": "/sites/ClassicIntranet/Documents/code-of-conduct.pdf",
+          "reviewNotes": "Current",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "GLOBAL POLICY CENTER",
+          "url": "",
+          "section": "Document Library",
+          "assetType": "Document",
+          "description": "Policy document 2",
+          "content": "Data Privacy Policy",
+          "imageRef": "IMG_006_doc_pdf.png",
+          "hyperlink": "/sites/ClassicIntranet/Documents/data-privacy.pdf",
+          "reviewNotes": "Current",
+          "migrationStatus": "Migrate"
+        },
+        {
+          "page": "",
+          "pageGroup": "GLOBAL POLICY CENTER",
+          "url": "",
+          "section": "Document Library",
+          "assetType": "Document",
+          "description": "Policy document 3",
+          "content": "Health & Safety Handbook 2022",
+          "imageRef": "IMG_006_doc_pdf.png",
+          "hyperlink": "/sites/ClassicIntranet/Documents/hs-handbook.pdf",
+          "reviewNotes": "Published 2022 \u2014 STALE \u2014 3+ years old",
+          "migrationStatus": "Archive"
+        },
+        {
+          "page": "",
+          "pageGroup": "GLOBAL POLICY CENTER",
+          "url": "",
+          "section": "Document Library",
+          "assetType": "Document",
+          "description": "Policy document 4",
+          "content": "IT Acceptable Use Policy",
+          "imageRef": "",
+          "hyperlink": "/sites/ClassicIntranet/Documents/it-aup.pdf",
+          "reviewNotes": "Published 2023 \u2014 approaching review",
+          "migrationStatus": "Review"
+        },
+        {
+          "page": "",
+          "pageGroup": "GLOBAL POLICY CENTER",
+          "url": "",
+          "section": "Content Zone",
+          "assetType": "Text Block",
+          "description": "Category list",
+          "content": "Code of Conduct \u00b7 Data Privacy \u00b7 Health & Safety \u00b7 Finance & Procurement \u00b7 IT & Security \u00b7 HR Policies",
+          "imageRef": "",
+          "hyperlink": "",
+          "reviewNotes": "Plain text list \u2014 no clickable category navigation",
+          "migrationStatus": "Rewrite"
+        }
+      ]
+    },
+    "imageIndex": {
+      "columns": [
+        "Reference ID",
+        "File Name",
+        "Page",
+        "Section",
+        "Usage",
+        "Resolution",
+        "Migration Action"
+      ],
+      "rows": [
+        {
+          "referenceId": "IMG_001",
+          "fileName": "crestfield-logo.png",
+          "page": "Homepage, Footer",
+          "section": "Navigation",
+          "usage": "Company logo \u2014 header and footer",
+          "resolution": "72dpi \u2014 LOW",
+          "migrationAction": "Replace with SVG"
+        },
+        {
+          "referenceId": "IMG_002",
+          "fileName": "hero-homepage.jpg",
+          "page": "Homepage",
+          "section": "Hero Banner",
+          "usage": "Full-width homepage hero",
+          "resolution": "96dpi \u2014 LOW",
+          "migrationAction": "Source hi-res from brand library"
+        },
+        {
+          "referenceId": "IMG_003",
+          "fileName": "news-veldt-campaign.jpg",
+          "page": "Homepage",
+          "section": "News Feed",
+          "usage": "Veldt Chocolate campaign news thumbnail",
+          "resolution": "150dpi \u2014 OK",
+          "migrationAction": "Migrate"
+        },
+        {
+          "referenceId": "IMG_004",
+          "fileName": "news-apac-q1.jpg",
+          "page": "Homepage",
+          "section": "News Feed",
+          "usage": "APAC Q1 dashboard news thumbnail",
+          "resolution": "150dpi \u2014 OK",
+          "migrationAction": "Migrate"
+        },
+        {
+          "referenceId": "IMG_005",
+          "fileName": "news-solara-sea.jpg",
+          "page": "Homepage",
+          "section": "News Feed",
+          "usage": "Solara Snacks SEA partnership news thumbnail",
+          "resolution": "150dpi \u2014 OK",
+          "migrationAction": "Migrate"
+        },
+        {
+          "referenceId": "IMG_006",
+          "fileName": "document-icon-pdf.png",
+          "page": "Multiple pages",
+          "section": "Document Library",
+          "usage": "Generic PDF icon used across all doc libraries",
+          "resolution": "72dpi \u2014 LOW",
+          "migrationAction": "Replace with Fluent UI icon"
+        },
+        {
+          "referenceId": "IMG_007",
+          "fileName": "wei-chen-portrait.jpg",
+          "page": "APAC Hub",
+          "section": "Leadership",
+          "usage": "Wei Chen \u2014 APAC President portrait",
+          "resolution": "96dpi \u2014 LOW",
+          "migrationAction": "Request hi-res from Comms team"
+        },
+        {
+          "referenceId": "IMG_008",
+          "fileName": "apac-news-solara.jpg",
+          "page": "APAC Hub",
+          "section": "News Feed",
+          "usage": "Solara Snacks SEA news thumbnail",
+          "resolution": "150dpi \u2014 OK",
+          "migrationAction": "Migrate"
+        },
+        {
+          "referenceId": "IMG_009",
+          "fileName": "apac-digital-series.jpg",
+          "page": "APAC Hub",
+          "section": "News Feed",
+          "usage": "Digital Series thumbnail \u2014 page is stale",
+          "resolution": "150dpi \u2014 OK",
+          "migrationAction": "Archive with page"
+        }
+      ]
+    },
+    "migrationSummary": {
+      "audit": [
+        {
+          "metric": "Total pages audited",
+          "value": "5"
+        },
+        {
+          "metric": "Total assets inventoried",
+          "value": "54"
+        },
+        {
+          "metric": "Ready to migrate",
+          "value": "28"
+        },
+        {
+          "metric": "Needs rewrite",
+          "value": "12"
+        },
+        {
+          "metric": "Stale / archive",
+          "value": "6"
+        },
+        {
+          "metric": "Under review",
+          "value": "8"
+        },
+        {
+          "metric": "Broken links found",
+          "value": "2"
+        },
+        {
+          "metric": "Low-res images flagged",
+          "value": "4"
+        }
+      ],
+      "painPoints": [
+        {
+          "id": "PP-001 Search",
+          "finding": "Classic keyword search returns 0 useful results. 15+ nav items on Procurement = users lost."
+        },
+        {
+          "id": "PP-002 Comms",
+          "finding": "Hero content on 3 pages has no publish date. Leadership message on APAC has no SLA."
+        },
+        {
+          "id": "PP-003 Analytics",
+          "finding": "Zero analytics visible. No page views, no engagement data, no search success tracking."
+        },
+        {
+          "id": "PP-004 Governance",
+          "finding": "2 stale documents found (2023). 1 broken link. No content owner attribution on any page."
+        },
+        {
+          "id": "PP-005 Mobile",
+          "finding": "Classic SP renders broken on mobile \u2014 tested on iOS Safari. Fixed-width tables overflow."
+        },
+        {
+          "id": "PP-006 Social",
+          "finding": "No vertical content format. No employee-generated content. No Viva Engage integration."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "meta": {
+    "client": "Crestfield Foods International",
+    "jobId": "DEMO-0022",
+    "note": "Canned demo pipeline. 13 real SPARK stages replayed from a rebranded JOB0022 run.",
+    "totalDurationMs": 47600
+  },
+  "stages": [
+    {
+      "id": "intake",
+      "label": "Intake",
+      "description": "Parse the client request, open the job card, and lock the run scope.",
+      "agent": "cc-intake",
+      "durationMs": 1800,
+      "logs": [
+        "Job DEMO-0022 opened for Crestfield Foods International",
+        "Scope: classic intranet → modern communication site",
+        "Source host recorded: contoso.sharepoint.com/sites/ClassicIntranet"
+      ]
+    },
+    {
+      "id": "verify-access",
+      "label": "Verify Access",
+      "description": "Preflight the source and target tenants before any read or write.",
+      "agent": "cc-preflight-sp",
+      "durationMs": 2600,
+      "logs": [
+        "Delegated session verify-contoso.json validated",
+        "Source READ scope confirmed · target WRITE scope confirmed",
+        "Preflight probe: 5 classic pages reachable — OK"
+      ]
+    },
+    {
+      "id": "capture-classic",
+      "label": "Capture Classic",
+      "description": "Crawl the classic site and snapshot every page, zone, and asset.",
+      "agent": "cc-sp-capture",
+      "durationMs": 5200,
+      "logs": [
+        "Crawled 16 classic pages across 5 hubs",
+        "Captured 54 assets · 9 images indexed",
+        "Fixed-width tables flagged: 3 pages overflow on mobile"
+      ]
+    },
+    {
+      "id": "audit",
+      "label": "Audit",
+      "description": "Build the content tracker: classify every asset and log pain-points.",
+      "agent": "cc-sp-audit",
+      "durationMs": 4100,
+      "logs": [
+        "48 content rows classified across Content Tracker",
+        "6 pain-points logged: PP-001 Search … PP-006 Social",
+        "2 broken links · 4 low-res images flagged"
+      ]
+    },
+    {
+      "id": "score-tier",
+      "label": "Score & Tier",
+      "description": "Score each page by reach and freshness, then bucket into 3 tiers.",
+      "agent": "cc-sp-score",
+      "durationMs": 2400,
+      "logs": [
+        "Signals: inbound links, days-since-modified, source text length",
+        "Tier 1: 4 pages · Tier 2: 7 · Tier 3: 5",
+        "Homepage pinned Tier 1 — priority score 1.00"
+      ]
+    },
+    {
+      "id": "notify",
+      "label": "Notify",
+      "description": "Post the tiered plan to Teams and ping the operator for the go-ahead.",
+      "agent": "cc-notify-operator",
+      "durationMs": 1500,
+      "logs": [
+        "Handover plan posted to Teams · SPARK channel",
+        "Operator gate: build approved for 16 pages",
+        "Notification delivered — 0 retries"
+      ]
+    },
+    {
+      "id": "migrate-images",
+      "label": "Migrate Images",
+      "description": "Upload usable images; flag low-res ones for rewrite or SVG swap.",
+      "agent": "cc-sp-assets",
+      "durationMs": 4300,
+      "logs": [
+        "9 images processed from Image Index",
+        "5 migrated as-is · 3 flagged low-res · 1 archived with page",
+        "crestfield-logo.png → replace with SVG (72dpi)"
+      ]
+    },
+    {
+      "id": "compose-pages",
+      "label": "Compose Pages",
+      "description": "Rebuild each interior page as modern web-part sections.",
+      "agent": "cc-sp-mirror",
+      "durationMs": 6800,
+      "logs": [
+        "Composed 15 interior pages from tracker rows",
+        "Zones mapped: hero, news, quick links, document library",
+        "APAC Regional Hub · Employee Center · Policy Center · Procurement"
+      ]
+    },
+    {
+      "id": "compose-homepage",
+      "label": "Compose Homepage",
+      "description": "Assemble the flagship homepage with hero, news carousel, and nav.",
+      "agent": "cc-sp-mirror",
+      "durationMs": 5400,
+      "logs": [
+        "Hero: 'Crestfield Foods International — Global Intranet Portal'",
+        "Company News carousel: 3 featured stories",
+        "Homepage set as site landing page"
+      ]
+    },
+    {
+      "id": "style-brand",
+      "label": "Style & Brand",
+      "description": "Apply the Crestfield theme, fonts, and 'Good Food, Every Day' voice.",
+      "agent": "cc-sp-theme",
+      "durationMs": 3200,
+      "logs": [
+        "Brand theme applied · tagline 'Good Food, Every Day'",
+        "SPFx wallpaper + header customizer deployed",
+        "Mobile render verified on iOS Safari — no overflow"
+      ]
+    },
+    {
+      "id": "verify-gate",
+      "label": "Verify Gate",
+      "description": "Fail-closed completeness gate: diff composed pages against the source. The agent cannot self-close — the gate decides.",
+      "agent": "cc-verify-sp",
+      "durationMs": 4800,
+      "isGate": true,
+      "failClosed": true,
+      "logs": [
+        "Content-zone diff: canvasContent web-part JSON vs source",
+        "16/16 pages matched · 0 missing zones · 0 dropped assets",
+        "copy fidelity 1.00 — PASS",
+        "Gate OPEN: job may proceed to handover"
+      ]
+    },
+    {
+      "id": "content-tracker",
+      "label": "Content Tracker",
+      "description": "Stamp final migration status per row and export the tracker workbook.",
+      "agent": "cc-sp-tracker",
+      "durationMs": 2200,
+      "logs": [
+        "Status stamped: 30 Migrate · 9 Rewrite · 5 Review · 4 Archive",
+        "Crestfield_Content_Tracker_v1.0.xlsx exported (3 sheets)",
+        "Migration Readiness Dashboard refreshed"
+      ]
+    },
+    {
+      "id": "handover-closeout",
+      "label": "Handover & Closeout",
+      "description": "Deliver the report, ping the operator, and close the job card.",
+      "agent": "cc-notify-closed",
+      "durationMs": 1300,
+      "logs": [
+        "Handover report delivered to operator",
+        "Verdict: copy fidelity 1.00 — gate PASSED",
+        "Job DEMO-0022 closed · duration 2h 34m"
+      ]
+    }
+  ]
+}
