@@ -46,7 +46,7 @@ intake brief and signing off at handover. Everything between is autonomous.
 | 8 | **Compose Pages** | Pages are rebuilt in tier order, in batches, as native modern web parts via Microsoft Graph. A failed page is logged and skipped — the run never aborts. |
 | 9 | **Compose Homepage** | The homepage is composed separately with its hero, quick links, and news layout. |
 | 10 | **Style & Brand** | Site wallpaper, header, and brand theme are applied to match the source's identity. |
-| 11 | **Verify Gate (fail-closed)** | A per-page diff compares the built page's web-part JSON against the source manifest. **Copy fidelity must reach 1.00.** The agent cannot self-close — this gate is the only path forward. |
+| 11 | **Verify Gate (fail-closed)** | A per-page diff compares the built page's content against the captured source manifest. **Copy fidelity must reach 1.00.** The agent cannot self-close — this gate is the only path forward. |
 | 12 | **Content Tracker** | A multi-sheet `content-tracker.xlsx` is generated (pages sorted by tier and priority) as the migration record of what moved and its status. |
 | 13 | **Handover & Closeout** | A handover summary is produced, the client is notified, artifacts are archived, and the job card is closed. |
 
@@ -92,8 +92,7 @@ Routes: `/` (showcase / landing) and `/sandbox` (interactive replay).
   migration, page/homepage composition, and the fail-closed verify gate. The engine source is
   **proprietary and not included in this public preview**; the demo is a faithful replay of what
   it produces.
-- **Platform:** Microsoft Graph (Sites.Selected), scoped to the source site (read) and the build
-  site (write). No SPFx, no CI, no `.sppkg`, no app catalog on this rail.
+- **Platform:** Microsoft Graph, scoped to read the source site and write the build site.
 
 ---
 

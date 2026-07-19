@@ -61,7 +61,7 @@
       "agent": "Strategist",
       "durationMs": 2400,
       "logs": [
-        "Signals: inbound links, days-since-modified, source text length",
+        "Signals: link graph, recency, content weight",
         "Tier 1: 4 pages · Tier 2: 7 · Tier 3: 5",
         "Homepage pinned Tier 1 — priority score 1.00"
       ]
@@ -122,7 +122,7 @@
       "durationMs": 3200,
       "logs": [
         "Brand theme applied · tagline 'Good Food, Every Day'",
-        "SPFx wallpaper + header customizer deployed",
+        "Brand wallpaper + header customizer applied",
         "Mobile render verified on iOS Safari — no overflow"
       ]
     },
@@ -135,7 +135,7 @@
       "isGate": true,
       "failClosed": true,
       "logs": [
-        "Content-zone diff: canvasContent web-part JSON vs source",
+        "Content-zone diff vs captured source",
         "16/16 pages matched · 0 missing zones · 0 dropped assets",
         "copy fidelity 1.00 — PASS",
         "Gate OPEN: job may proceed to handover"
