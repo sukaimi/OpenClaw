@@ -108,6 +108,10 @@ def main():
         )
 
     print(f"\n[batch-runner] Done. {exception_count} exception(s) total.")
+    # Fail-closed: a partial/failed build must NOT report success to automation.
+    if exception_count > 0:
+        print(f"[batch-runner] FAILURE: {exception_count} page(s) failed to compose; exiting non-zero.")
+        sys.exit(1)
     sys.exit(0)
 
 

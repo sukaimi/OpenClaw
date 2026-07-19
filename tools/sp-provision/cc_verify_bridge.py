@@ -16,6 +16,7 @@ popup + ships the bundle to /srv/intake-captures/<itemId>/ + writes <itemId>.res
 import glob
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -109,18 +110,38 @@ def cmd_run():
         if res.get("ok"):
             notes = "verified: %s pages, %s images" % (res.get("pages"), res.get("images"))
             bundle = "%s/%s" % (CAPTURES, rid)
+            verify_status = "Verified"
             if job and os.path.isdir(bundle):
-                dst = "/srv/projects/%s" % job
-                os.makedirs(dst, exist_ok=True)
-                if os.path.isdir(dst + "/capture"):
-                    shutil.rmtree(dst + "/capture", ignore_errors=True)
-                shutil.move(bundle, dst + "/capture")
-                subprocess.run([PY, PROV + "/sp-audit.py", "--from-capture",
-                                dst + "/capture", "--job", job, "--out", dst + "/sp-expect.json"])
-                notes += "; bundle -> %s/capture + sp-expect generated" % dst
-            _patch(sp, base, rid, {"AccessVerified": "Verified", "CaptureId": rid,
-                                   "VerifyRequested": False, "VerifyNotes": notes})
-            print("RECONCILED %s -> VERIFIED (%s)" % (rid, notes))
+                # SECURITY (path traversal): `job` is operator-supplied. Require the
+                # documented JOB id shape AND confirm the resolved destination stays
+                # directly under /srv/projects before any move/replace filesystem op.
+                projects_root = "/srv/projects"
+                dst = os.path.normpath("%s/%s" % (projects_root, job))
+                if not re.match(r"^JOB[0-9]{4,}$", job) or os.path.dirname(dst) != projects_root:
+                    verify_status = "Failed"
+                    notes = "verify aborted: invalid JOB id %r" % job
+                else:
+                    os.makedirs(dst, exist_ok=True)
+                    if os.path.isdir(dst + "/capture"):
+                        shutil.rmtree(dst + "/capture", ignore_errors=True)
+                    shutil.move(bundle, dst + "/capture")
+                    # FAIL-CLOSED: do not mark Verified if manifest generation failed.
+                    # A non-zero sp-audit return must surface as Failed, not fail open.
+                    audit = subprocess.run([PY, PROV + "/sp-audit.py", "--from-capture",
+                                            dst + "/capture", "--job", job, "--out", dst + "/sp-expect.json"])
+                    if audit.returncode != 0:
+                        verify_status = "Failed"
+                        notes = "verify failed: sp-audit exited %d" % audit.returncode
+                    else:
+                        notes += "; bundle -> %s/capture + sp-expect generated" % dst
+            if verify_status == "Verified":
+                _patch(sp, base, rid, {"AccessVerified": "Verified", "CaptureId": rid,
+                                       "VerifyRequested": False, "VerifyNotes": notes})
+                print("RECONCILED %s -> VERIFIED (%s)" % (rid, notes))
+            else:
+                _patch(sp, base, rid, {"AccessVerified": "Failed", "VerifyRequested": False,
+                                       "VerifyNotes": notes})
+                print("RECONCILED %s -> FAILED (%s)" % (rid, notes))
         else:
             _patch(sp, base, rid, {"AccessVerified": "Failed", "VerifyRequested": False,
                                    "VerifyNotes": "verify failed: %s" % res.get("error")})

@@ -29,7 +29,9 @@ def recency_score(days):
     """0–100 recency score. 0 days = 100, 730+ days = 0."""
     if days is None:
         return 0
-    return max(0, round(100 * (1 - days / 730)))
+    # Upper clamp guards against future lastModified timestamps (negative days)
+    # producing scores above 100 and distorting priority ordering.
+    return min(100, max(0, round(100 * (1 - days / 730))))
 
 
 def content_length_score(src_len):
@@ -112,9 +114,10 @@ def main():
     pages = expect.get("pages", [])
 
     if not pages:
-        print("[scorer] WARNING: no pages in sp-expect.json")
-        json.dump({"scored": []}, open(args.out, "w"), indent=2)
-        return
+        # Fail-closed: an empty page manifest is invalid input (likely an incomplete
+        # or failed audit) and must not silently succeed with an empty score set.
+        print("[scorer] ERROR: no pages in sp-expect.json — refusing to write empty score set")
+        sys.exit(1)
 
     scored = [score_page(p, pages) for p in pages]
     scored.sort(key=lambda x: (x["tier"], -x["priority_score"]))

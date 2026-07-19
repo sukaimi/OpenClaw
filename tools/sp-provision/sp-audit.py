@@ -808,12 +808,20 @@ def load_capture(cap_dir):
     src_kind = man.get("sourceKind", "classic-capture")
     lists = [(l.get("name") or l.get("title")) for l in man.get("lists", [])]
     pages, skipped = [], []
+    # SECURITY (arbitrary file read): manifest `body` paths are untrusted. Resolve each
+    # against the capture dir and only read regular files strictly beneath it — reject
+    # absolute paths and `..` traversal out of the bundle.
+    cap_root = os.path.realpath(cap_dir)
     for p in man.get("pages", []):
         nm = p.get("name", "") or ""
         if nm.lower() in SYSTEM_PAGES:
             skipped.append(nm); continue
-        bf = os.path.join(cap_dir, p.get("body", ""))
-        body = open(bf, encoding="utf-8").read() if os.path.exists(bf) else ""
+        bf = os.path.realpath(os.path.join(cap_dir, p.get("body", "")))
+        if (os.path.commonpath([cap_root, bf]) == cap_root and bf != cap_root
+                and os.path.isfile(bf)):
+            body = open(bf, encoding="utf-8").read()
+        else:
+            body = ""
         title = p.get("title") or nm[:-5]
         pages.append((nm, title, _text(body), body, p.get("lastModified")))
     if not pages:

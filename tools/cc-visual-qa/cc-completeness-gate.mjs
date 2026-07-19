@@ -462,6 +462,21 @@ const publishProblems = [];
 if (!builtTitle) publishProblems.push("built page has empty <title> (likely not rendered/published)");
 if (/page not found|404|error|access denied/i.test(builtTitle)) publishProblems.push('built <title> looks like an error page: "' + builtTitle + '"');
 
+// SECURITY / FAIL-CLOSED: a non-error <title> is NOT proof of publication — a draft or
+// checked-out page can render a perfectly valid title. Require authoritative SharePoint
+// publication metadata (Graph sitePage publishingState.level, or the list item moderation
+// / publication field) to affirmatively say "published". If that metadata is absent or
+// could not be fetched, treat the page as NOT published (fail closed) — never assume it.
+const pubLevel  = String(built.publishingState?.level ?? built.publishingLevel ?? "").toLowerCase();
+const modStatus = built.listItem?.fields?._ModerationStatus ?? built.moderationStatus;
+const isPublished =
+  pubLevel === "published" || pubLevel === "checkedin" ||
+  built.published === true ||
+  modStatus === 0 || modStatus === "0" || String(modStatus).toLowerCase() === "approved";
+if (!isPublished) {
+  publishProblems.push("cannot confirm SharePoint publication state (no authoritative publishingState/moderation metadata) — treating as NOT published (fail-closed)");
+}
+
 // Sections: count distinct content zones as a proxy for SP canvas sections, OR honour an explicit
 // built.sections count if the capture provides one. Content images+links grouped by zone.
 let sectionCount;

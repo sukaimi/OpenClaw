@@ -35,11 +35,15 @@ function loadCfg() {
   return { host, user, pass };
 }
 const CFG = loadCfg();
-const SSH = ["-o", "StrictHostKeyChecking=no", `${CFG.user}@${CFG.host}`];
+// SECURITY (MITM): trust-on-first-use. accept-new records an unknown host key on the first
+// connect (won't break automation) but REJECTS a subsequently CHANGED key, which is the
+// signature of a man-in-the-middle. Never use "no" here — that blindly accepts any key.
+const SSH = ["-o", "StrictHostKeyChecking=accept-new", `${CFG.user}@${CFG.host}`];
 
 function ssh(cmd) { return execFileSync("sshpass", ["-p", CFG.pass, "ssh", ...SSH, cmd], { encoding: "utf8" }); }
 function scpDir(localDir, remoteParent) {
-  execFileSync("sshpass", ["-p", CFG.pass, "scp", "-r", "-o", "StrictHostKeyChecking=no", localDir, `${CFG.user}@${CFG.host}:${remoteParent}`], { stdio: "ignore" });
+  // SECURITY (MITM): same trust-on-first-use policy for the capture-bundle transfer.
+  execFileSync("sshpass", ["-p", CFG.pass, "scp", "-r", "-o", "StrictHostKeyChecking=accept-new", localDir, `${CFG.user}@${CFG.host}:${remoteParent}`], { stdio: "ignore" });
 }
 function writeRemoteJson(path, obj) {
   const b64 = Buffer.from(JSON.stringify(obj, null, 2)).toString("base64");

@@ -126,6 +126,23 @@ def page_targets(cfg):
     return targets
 
 
+_SHELL_META = set(";|&$`><\n")
+
+
+def _no_shell_meta(field, value):
+    """SECURITY: stage `cmd` strings are executed via `/bin/sh -c` (see run_stage), so any
+    config/manifest-derived value interpolated into a cmd is a shell-injection boundary.
+    Reject values containing shell metacharacters before they can reach the shell.
+    NOTE: the preferred longer-term fix is arg-array execution (subprocess with a list,
+    no `/bin/sh -c`); this validation is the minimal guard for now."""
+    s = "" if value is None else str(value)
+    bad = _SHELL_META.intersection(s)
+    if bad:
+        raise SystemExit("[mirror] refusing unsafe %s value (shell metacharacters %r): %r"
+                         % (field, "".join(sorted(bad)), s))
+    return value
+
+
 def build_plan(cfg, server_mode=False):
     """Return the ORDERED stage plan. Each stage: name, where (mac|server), cmd (str), note.
     `cmd` is the literal invocation, params threaded from cfg — printed verbatim on --dry-run."""
@@ -146,6 +163,18 @@ def build_plan(cfg, server_mode=False):
     styler = cfg.get("styler") or {}
     wall = styler.get("wallpaperUrl")
     brand = styler.get("brandColor")
+
+    # SECURITY: sanitize config/manifest-derived values interpolated into `/bin/sh -c`
+    # stage commands (job/jobDir are threaded UNQUOTED; the rest defensively). Reject any
+    # shell metacharacters before plan construction so a crafted job.config.json can't inject.
+    _no_shell_meta("job", job)
+    _no_shell_meta("jobDir", jobDir)
+    _no_shell_meta("sourceUrl", src)
+    _no_shell_meta("targetSite", tgt)
+    for _k, _v in styler.items():
+        _no_shell_meta("styler.%s" % _k, _v)
+    for _p in (cfg.get("pages") or []):
+        _no_shell_meta("pages[]", _p)
 
     P = []  # plan
 

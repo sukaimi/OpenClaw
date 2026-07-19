@@ -207,7 +207,18 @@ def main():
     if capture_dir:
         mp = os.path.join(capture_dir, "images-map.json")
         _m = json.load(open(mp)) if os.path.exists(mp) else {}
-        capture_imgs = {src: os.path.join(capture_dir, rel) for src, rel in _m.items()}
+        # SECURITY (path traversal): images-map.json is untrusted and its values become
+        # upload sources. Only accept paths that resolve to a regular file strictly
+        # beneath the capture dir; reject absolute paths and `..` escapes.
+        cap_root = os.path.realpath(capture_dir)
+        capture_imgs = {}
+        for src, rel in _m.items():
+            fp = os.path.realpath(os.path.join(capture_dir, rel))
+            if (os.path.commonpath([cap_root, fp]) == cap_root and fp != cap_root
+                    and os.path.isfile(fp)):
+                capture_imgs[src] = fp
+            else:
+                print("[img-migrate] SECURITY: rejected out-of-bundle image source %r -> %r" % (src, rel))
 
     # BUILD site: from site.json (preferred) or explicit flags
     build_host = _arg("--build-host")
