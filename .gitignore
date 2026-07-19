@@ -1,0 +1,42 @@
+# --- secrets / local credentials (NEVER commit) ---
+.claude/settings.local.json
+*.env
+.env*
+*.pem
+*.pfx
+*.key
+*secret*
+
+# --- os / editor ---
+.DS_Store
+
+# --- caches ---
+node-compile-cache/
+v8-compile-cache-501/
+
+# --- tooling logs ---
+.playwright-mcp/
+*.log
+
+# --- runtime data (lives on server, not in repo) ---
+*.sqlite
+*.sqlite3
+*.db
+
+# --- build / generated output (future feature work) ---
+node_modules/
+dist/
+build/
+screenshots/
+
+# --- local rollback tarballs (Layer 2) ---
+backups/
+*.backup.tar.gz
+
+# --- SP pipeline debris: editor backups + one-off run artifacts (not source) ---
+*.bak-*
+tools/cc-visual-qa/capture-*/
+tools/cc-visual-qa/rdq-home-manifest.json
+ccgate-canvas-*/
+tools/sp-provision/__pycache__/
+tools/sp-provision/tests/__pycache__/

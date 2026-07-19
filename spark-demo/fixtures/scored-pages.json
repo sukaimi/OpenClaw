@@ -1,0 +1,96 @@
+{
+  "meta": {
+    "client": "Crestfield Foods International",
+    "jobId": "DEMO-0022",
+    "note": "Canned demo. 16 pages scored and tiered from a rebranded classic crawl.",
+    "tierCounts": { "tier1": 4, "tier2": 7, "tier3": 5 },
+    "signalWeights": {
+      "is_homepage": 0.30,
+      "inbound_links": 0.30,
+      "days_since_modified": 0.20,
+      "source_text_len": 0.20
+    }
+  },
+  "pages": [
+    {
+      "id": "PG-01", "title": "Homepage", "url": "/sites/ClassicIntranet",
+      "tier": 1, "priority_score": 1.00, "complexity_flag": "high",
+      "signals": { "is_homepage": true, "inbound_links": 142, "days_since_modified": 6, "source_text_len": 2180 }
+    },
+    {
+      "id": "PG-02", "title": "APAC Regional Hub", "url": "/sites/ClassicIntranet/apac",
+      "tier": 1, "priority_score": 0.92, "complexity_flag": "high",
+      "signals": { "is_homepage": false, "inbound_links": 98, "days_since_modified": 11, "source_text_len": 1960 }
+    },
+    {
+      "id": "PG-03", "title": "Employee Center", "url": "/sites/ClassicIntranet/employee",
+      "tier": 1, "priority_score": 0.89, "complexity_flag": "medium",
+      "signals": { "is_homepage": false, "inbound_links": 110, "days_since_modified": 9, "source_text_len": 1540 }
+    },
+    {
+      "id": "PG-04", "title": "Global Policy Center", "url": "/sites/ClassicIntranet/policy",
+      "tier": 1, "priority_score": 0.85, "complexity_flag": "medium",
+      "signals": { "is_homepage": false, "inbound_links": 76, "days_since_modified": 18, "source_text_len": 2010 }
+    },
+    {
+      "id": "PG-05", "title": "Procurement", "url": "/sites/ClassicIntranet/procurement",
+      "tier": 2, "priority_score": 0.74, "complexity_flag": "high",
+      "signals": { "is_homepage": false, "inbound_links": 54, "days_since_modified": 22, "source_text_len": 1780 }
+    },
+    {
+      "id": "PG-06", "title": "Veldt Chocolate Brand Space", "url": "/sites/ClassicIntranet/brands/veldt",
+      "tier": 2, "priority_score": 0.71, "complexity_flag": "medium",
+      "signals": { "is_homepage": false, "inbound_links": 61, "days_since_modified": 14, "source_text_len": 1320 }
+    },
+    {
+      "id": "PG-07", "title": "Solara Snacks Brand Space", "url": "/sites/ClassicIntranet/brands/solara",
+      "tier": 2, "priority_score": 0.68, "complexity_flag": "medium",
+      "signals": { "is_homepage": false, "inbound_links": 57, "days_since_modified": 16, "source_text_len": 1290 }
+    },
+    {
+      "id": "PG-08", "title": "HR & Benefits", "url": "/sites/ClassicIntranet/hr",
+      "tier": 2, "priority_score": 0.63, "complexity_flag": "medium",
+      "signals": { "is_homepage": false, "inbound_links": 49, "days_since_modified": 27, "source_text_len": 1410 }
+    },
+    {
+      "id": "PG-09", "title": "IT Service Desk", "url": "/sites/ClassicIntranet/it",
+      "tier": 2, "priority_score": 0.59, "complexity_flag": "low",
+      "signals": { "is_homepage": false, "inbound_links": 44, "days_since_modified": 31, "source_text_len": 980 }
+    },
+    {
+      "id": "PG-10", "title": "Food Safety & Quality", "url": "/sites/ClassicIntranet/quality",
+      "tier": 2, "priority_score": 0.55, "complexity_flag": "medium",
+      "signals": { "is_homepage": false, "inbound_links": 38, "days_since_modified": 40, "source_text_len": 1620 }
+    },
+    {
+      "id": "PG-11", "title": "Travel & Expense Policy", "url": "/sites/ClassicIntranet/policy/travel",
+      "tier": 2, "priority_score": 0.51, "complexity_flag": "low",
+      "signals": { "is_homepage": false, "inbound_links": 33, "days_since_modified": 52, "source_text_len": 1150 }
+    },
+    {
+      "id": "PG-12", "title": "Sustainability Report 2025", "url": "/sites/ClassicIntranet/sustainability",
+      "tier": 3, "priority_score": 0.42, "complexity_flag": "low",
+      "signals": { "is_homepage": false, "inbound_links": 21, "days_since_modified": 96, "source_text_len": 1740 }
+    },
+    {
+      "id": "PG-13", "title": "Town Hall Archive", "url": "/sites/ClassicIntranet/townhall",
+      "tier": 3, "priority_score": 0.34, "complexity_flag": "low",
+      "signals": { "is_homepage": false, "inbound_links": 15, "days_since_modified": 128, "source_text_len": 860 }
+    },
+    {
+      "id": "PG-14", "title": "APAC Digital Series", "url": "/sites/ClassicIntranet/apac/digital-series",
+      "tier": 3, "priority_score": 0.28, "complexity_flag": "low",
+      "signals": { "is_homepage": false, "inbound_links": 11, "days_since_modified": 173, "source_text_len": 640 }
+    },
+    {
+      "id": "PG-15", "title": "Legacy Procurement Forms", "url": "/sites/ClassicIntranet/procurement/forms-2023",
+      "tier": 3, "priority_score": 0.21, "complexity_flag": "low",
+      "signals": { "is_homepage": false, "inbound_links": 7, "days_since_modified": 402, "source_text_len": 520 }
+    },
+    {
+      "id": "PG-16", "title": "Brand Guidelines 2023", "url": "/sites/ClassicIntranet/brands/guidelines-2023",
+      "tier": 3, "priority_score": 0.17, "complexity_flag": "low",
+      "signals": { "is_homepage": false, "inbound_links": 5, "days_since_modified": 431, "source_text_len": 710 }
+    }
+  ]
+}

@@ -1,0 +1,211 @@
+@import "tailwindcss";
+
+/*
+  SPARK v1 — Stripe-inspired design tokens.
+  Source: DESIGN.md (Stripe design system).
+  Theme-aware: light is the default; dark follows prefers-color-scheme
+  unless a manual `data-theme` is set on <html>, which always wins.
+*/
+
+:root {
+  /* Surfaces */
+  --background: #ffffff;
+  --surface: #ffffff;
+  --surface-muted: #f6f9fc;
+
+  /* Text */
+  --heading: #061b31; /* deep navy — never pure black */
+  --label: #273951;
+  --body: #64748d;
+
+  /* Brand / interactive */
+  --primary: #533afd; /* Stripe purple / indigo */
+  --primary-hover: #4434d4;
+  --brand-dark: #1c1e54;
+
+  /* Gradient stops (indigo -> cyan, per SPARK brief) */
+  --grad-from: #533afd;
+  --grad-mid: #6d5bff;
+  --grad-to: #22d3ee;
+
+  /* Decorative accents */
+  --accent-magenta: #f96bee;
+  --accent-ruby: #ea2261;
+  --accent-cyan: #22d3ee;
+
+  /* Status accents (theme-tracked; used by sandbox status text) */
+  --success: #059669;
+  --success-strong: #047857;
+  --warn: #d97706;
+
+  /* Borders */
+  --border: #e5edf5;
+  --border-strong: #d6d9fc;
+
+  /* Radius scale (conservative 4-8px) */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  /* Blue-tinted elevation */
+  --shadow-ambient: rgba(23, 23, 23, 0.06) 0px 3px 6px;
+  --shadow-card: rgba(50, 50, 93, 0.12) 0px 15px 35px -12px,
+    rgba(0, 0, 0, 0.08) 0px 8px 20px -8px;
+  --shadow-elevated: rgba(50, 50, 93, 0.25) 0px 30px 45px -30px,
+    rgba(0, 0, 0, 0.1) 0px 18px 36px -18px;
+
+  /* Font stacks (system — no runtime font fetch) */
+  --font-sans-stack: ui-sans-serif, -apple-system, BlinkMacSystemFont,
+    "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono-stack: ui-monospace, "SourceCodePro", "SF Mono", SFMono-Regular,
+    Menlo, Consolas, monospace;
+}
+
+/* Dark tokens applied when the OS prefers dark AND no explicit light override */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #0a1224;
+    --surface: #111a30;
+    --surface-muted: #0d1526;
+
+    --heading: #f5f8ff;
+    --label: #c7d2e8;
+    --body: #93a1c0;
+
+    --primary: #7c6cff;
+    --primary-hover: #9385ff;
+    --brand-dark: #10173a;
+
+    --success: #34d399;
+    --success-strong: #6ee7b7;
+    --warn: #fbbf24;
+
+    --grad-from: #7c6cff;
+    --grad-mid: #6d8bff;
+    --grad-to: #34e0f0;
+
+    --border: rgba(255, 255, 255, 0.1);
+    --border-strong: rgba(124, 108, 255, 0.4);
+
+    --shadow-ambient: rgba(0, 0, 0, 0.4) 0px 3px 6px;
+    --shadow-card: rgba(0, 0, 0, 0.45) 0px 15px 35px -12px,
+      rgba(3, 3, 39, 0.5) 0px 8px 20px -8px;
+    --shadow-elevated: rgba(3, 3, 39, 0.55) 0px 30px 45px -24px,
+      rgba(0, 0, 0, 0.4) 0px 18px 36px -18px;
+  }
+}
+
+/* Manual toggle — always wins over the OS preference */
+:root[data-theme="dark"] {
+  --background: #0a1224;
+  --surface: #111a30;
+  --surface-muted: #0d1526;
+
+  --heading: #f5f8ff;
+  --label: #c7d2e8;
+  --body: #93a1c0;
+
+  --primary: #7c6cff;
+  --primary-hover: #9385ff;
+  --brand-dark: #10173a;
+
+  --success: #34d399;
+  --success-strong: #6ee7b7;
+  --warn: #fbbf24;
+
+  --grad-from: #7c6cff;
+  --grad-mid: #6d8bff;
+  --grad-to: #34e0f0;
+
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(124, 108, 255, 0.4);
+
+  --shadow-ambient: rgba(0, 0, 0, 0.4) 0px 3px 6px;
+  --shadow-card: rgba(0, 0, 0, 0.45) 0px 15px 35px -12px,
+    rgba(3, 3, 39, 0.5) 0px 8px 20px -8px;
+  --shadow-elevated: rgba(3, 3, 39, 0.55) 0px 30px 45px -24px,
+    rgba(0, 0, 0, 0.4) 0px 18px 36px -18px;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Map tokens into Tailwind's utility layer (v4 @theme) */
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-heading: var(--heading);
+  --color-label: var(--label);
+  --color-body: var(--body);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-brand-dark: var(--brand-dark);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent-magenta: var(--accent-magenta);
+  --color-accent-cyan: var(--accent-cyan);
+  --color-success: var(--success);
+  --color-success-strong: var(--success-strong);
+  --color-warn: var(--warn);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+
+  --font-sans: var(--font-sans-stack);
+  --font-mono: var(--font-mono-stack);
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--body);
+  font-family: var(--font-sans-stack);
+  font-weight: 300; /* Stripe signature: light weight */
+  font-feature-settings: "ss01";
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+h1, h2, h3, h4 {
+  color: var(--heading);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+/* Reusable helpers */
+.spark-gradient-text {
+  background: linear-gradient(
+    100deg,
+    var(--grad-from),
+    var(--grad-mid),
+    var(--grad-to)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.spark-gradient-bg {
+  background: linear-gradient(
+    135deg,
+    var(--grad-from),
+    var(--grad-mid) 55%,
+    var(--grad-to)
+  );
+}
+
+.shadow-card {
+  box-shadow: var(--shadow-card);
+}
+.shadow-elevated {
+  box-shadow: var(--shadow-elevated);
+}

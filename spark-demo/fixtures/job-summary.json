@@ -1,0 +1,50 @@
+{
+  "jobId": "DEMO-0022",
+  "client": "Crestfield Foods International",
+  "brandTagline": "Good Food, Every Day",
+  "runType": "Classic \u2192 Modern SharePoint migration",
+  "engine": "SPARK pipeline (OpenClaw SP delivery line)",
+  "source": {
+    "label": "Classic SharePoint intranet",
+    "site": "https://contoso.sharepoint.com/sites/ClassicIntranet"
+  },
+  "target": {
+    "label": "Modern SharePoint communication site",
+    "site": "https://contoso.sharepoint.com/sites/CrestfieldHub"
+  },
+  "pages": {
+    "audited": 5,
+    "crawled": 16,
+    "composed": 16,
+    "homepageRebuilt": true
+  },
+  "tiers": {
+    "tier1": 4,
+    "tier2": 7,
+    "tier3": 5
+  },
+  "assets": {
+    "inventoried": 54,
+    "images": 9,
+    "migrate": 28,
+    "rewrite": 12,
+    "review": 8,
+    "archive": 6,
+    "brokenLinks": 2,
+    "lowResImages": 4
+  },
+  "verdict": {
+    "copyFidelity": "1.00",
+    "verifyGate": "PASS",
+    "gateMode": "fail-closed",
+    "statement": "copy fidelity 1.00 \u2014 content match verified, gate PASSED"
+  },
+  "timestamps": {
+    "intakeReceived": "2026-06-12 08:41 UTC",
+    "captureComplete": "2026-06-12 09:07 UTC",
+    "verifyGatePassed": "2026-06-12 10:52 UTC",
+    "handoverDelivered": "2026-06-12 11:15 UTC",
+    "totalDuration": "2h 34m"
+  },
+  "note": "Canned demo run. Fictional client, rebranded from a real JOB0022 delivery. Placeholder contoso.sharepoint.com URLs."
+}
