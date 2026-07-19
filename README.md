@@ -1,5 +1,7 @@
 # SPARK v1 — SharePoint Autonomous Rebuild Kit
 
+[![OpenArena](https://openarena.to/api/badge/cmrh8qdfj000004jio6lbj0td)](https://openarena.to/en/projects/cmrh8qdfj000004jio6lbj0td)
+
 **An autonomous multi-agent pipeline that rebuilds legacy _classic_ SharePoint intranets into modern SharePoint — end to end, with a fail-closed quality gate the agent cannot bypass.**
 
 ---
