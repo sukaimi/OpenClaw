@@ -2,6 +2,7 @@ import Button from "@/components/Button";
 import Hero from "@/components/showcase/Hero";
 import BeforeAfterSlider from "@/components/showcase/BeforeAfterSlider";
 import PipelineFlow from "@/components/showcase/PipelineFlow";
+import AgentsSection from "@/components/showcase/AgentsSection";
 import KitCards from "@/components/showcase/KitCards";
 import StatsBand from "@/components/showcase/StatsBand";
 
@@ -30,6 +31,8 @@ export default function Home() {
       </section>
 
       <PipelineFlow />
+
+      <AgentsSection />
 
       <KitCards />
 
