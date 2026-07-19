@@ -121,7 +121,7 @@ function ImageIndexTable() {
                 <td className={`${tdClass} whitespace-nowrap`}>{r.section}</td>
                 <td className={`${tdClass} min-w-[200px]`}>{r.usage}</td>
                 <td className={`${tdClass} whitespace-nowrap`}>
-                  <span className={lowRes ? "font-medium text-amber-600 dark:text-amber-400" : ""}>
+                  <span className={lowRes ? "font-medium text-warn" : ""}>
                     {r.resolution}
                   </span>
                 </td>

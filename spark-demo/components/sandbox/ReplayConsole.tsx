@@ -48,7 +48,7 @@ export default function ReplayConsole({
             <span
               className={`inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border px-2 py-1 font-mono text-[12px] ${
                 onGateStage
-                  ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  ? "border-emerald-500/40 bg-emerald-500/10 text-success"
                   : "border-border bg-surface-muted text-body"
               }`}
             >
@@ -129,7 +129,7 @@ export default function ReplayConsole({
             ✓
           </span>
           <div>
-            <p className="text-[15px] font-semibold text-emerald-700 dark:text-emerald-300">
+            <p className="text-[15px] font-semibold text-success-strong">
               copy fidelity 1.00 — PASS
             </p>
             <p className="mt-0.5 text-[13px] text-body">

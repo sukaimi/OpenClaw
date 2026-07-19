@@ -441,13 +441,12 @@ def _publishing_blocks(raw_html):
 def _fetch_list_items(sid, list_name):  # pragma: no cover
     """STUB — live Graph list fetch. NOT wired: we make NO live calls in this rail.
     The real implementation would GET /sites/{sid}/lists/{list_name}/items?$expand=
-    fields and normalise each row to {title, href, fields{}}; it needs a reference
-    site to validate field selection + a true dynamic binding story.
-    # TODO(JOB0024-109): live list fetch needs a reference site
-    Until then, callers pass a pre-parsed items[] array (capture/synthetic)."""
+    fields and normalise each row to {title, href, fields{}}.
+    Not implemented in this snapshot; callers pass a pre-parsed items[] array
+    (capture/synthetic)."""
     raise NotImplementedError(
-        "live list fetch deferred — pass a parsed items[] array "
-        "(TODO(JOB0024-109): needs a reference site)")
+        "live list fetch not implemented in this snapshot — "
+        "pass a parsed items[] array")
 
 
 def _listview_blocks(items, kind_hint=""):

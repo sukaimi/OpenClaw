@@ -78,15 +78,22 @@ function capture(url, id) {
 }
 
 function processOne(id) {
+  // Security: `id` is derived from a remote queue filename and is interpolated into
+  // shell commands below. Reject anything that isn't a plain slug to prevent command
+  // injection / path traversal, then quote the path args as defense in depth.
+  if (!/^[A-Za-z0-9_-]+$/.test(id)) {
+    console.error(`[verify] skipping invalid id: ${JSON.stringify(id)}`);
+    return;
+  }
   let req;
-  try { req = JSON.parse(ssh(`cat /srv/verify-queue/${id}.json`)); } catch { return; }
+  try { req = JSON.parse(ssh(`cat '/srv/verify-queue/${id}.json'`)); } catch { return; }
   if (!req.url) { writeRemoteJson(`/srv/verify-queue/${id}.result.json`, { ok: false, error: "no url" }); return; }
-  ssh(`touch /srv/verify-queue/${id}.lock`);
+  ssh(`touch '/srv/verify-queue/${id}.lock'`);
   console.log(`[verify] ${id}: capturing ${req.url}`);
   const r = capture(req.url, id);
   try {
     if (r.ok) {
-      ssh(`rm -rf /srv/intake-captures/${id} && mkdir -p /srv/intake-captures/${id}`);
+      ssh(`rm -rf '/srv/intake-captures/${id}' && mkdir -p '/srv/intake-captures/${id}'`);
       scpDir(`${r.out}/.`, `/srv/intake-captures/${id}/`);
       writeRemoteJson(`/srv/verify-queue/${id}.result.json`, { ok: true, pages: r.pages, images: r.images, capturedAt: new Date().toISOString() });
       console.log(`[verify] ${id}: OK (${r.pages} pages, ${r.images} images) -> /srv/intake-captures/${id}`);
@@ -95,7 +102,7 @@ function processOne(id) {
       console.log(`[verify] ${id}: FAILED — ${r.error}`);
     }
   } finally {
-    ssh(`rm -f /srv/verify-queue/${id}.lock`);
+    ssh(`rm -f '/srv/verify-queue/${id}.lock'`);
   }
 }
 

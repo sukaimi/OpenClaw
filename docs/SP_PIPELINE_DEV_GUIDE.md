@@ -16,10 +16,11 @@ another tenant.
 **Level 1 (this rail):** source classic site + isolated build site both live in **our
 contoso tenant**. The operator supplies the classic **source URL** as a parameter.
 **Level 2** (deploy the built modern site into the client's own tenant) — see section 9 below.
-`cc_sp_export.py` packages the built pages; `cc_sp_import.py` re-imports into the client tenant.
-Requires the client admin to grant `Sites.Selected` write on their target site (one-time).
+The export/import helpers that package the built pages and re-import them into the client tenant
+ship separately and are not included in this public snapshot. Requires the client admin to grant
+`Sites.Selected` write on their target site (one-time).
 
-Toolkit: `/root/.openclaw/sp-provision/spclient.py` → `from spclient import SP`. App-cert auth
+Toolkit: `tools/sp-provision/spclient.py` → `from spclient import SP`. App-cert auth
 (Sites.Selected), scoped to BOTH the source site (read) and the build site (write).
 
 ---
@@ -28,8 +29,8 @@ Toolkit: `/root/.openclaw/sp-provision/spclient.py` → `from spclient import SP
 
 The whole pipeline is now driven by one config-driven orchestrator. Per job:
 
-1. `cc-sp-config <JOB>` -> writes `/srv/projects/<JOB>/job.config.json` from brief+site+sp-expect (sourceUrl, targetSite, pages, buildCap, heavyWebpartCap, styler).
-2. **Operator full-run (Mac):** `cc-sp-mirror --config /srv/projects/<JOB>/job.config.json [--dry-run] [--from <stage>]`
+1. `cc-sp-config <JOB>` -> writes `projects/<JOB>/job.config.json` from brief+site+sp-expect (sourceUrl, targetSite, pages, buildCap, heavyWebpartCap, styler).
+2. **Operator full-run (Mac):** `cc-sp-mirror --config projects/<JOB>/job.config.json [--dry-run] [--from <stage>]`
 
 Full 17-stage pipeline (in order):
 
@@ -85,76 +86,36 @@ touchpoints only: intake form submission + handover sign-off. Zero mid-job gates
 
 ---
 
-## 0a. INTAKE TRIGGER LAYER (before the engineer is ever loaded) — fixed 2026-07-12
+## 0a. Intake trigger layer (before the build engineer is loaded)
 
-Everything above starts only once a JOB exists. That handoff was built (2026-06-11) but never
-actually wired end-to-end — closed 2026-07-12, all fixes verified live (not assumed). Full write-up:
-[[project_sp_intake_automation_fix]] memory. Scripts: `/root/.openclaw/sp-provision/` on the server
-(no git remote there — edited live via SSH; `.bak-*` files left next to each changed script).
+Everything above starts only once a JOB exists. The intake trigger layer turns a submitted
+intake brief into a dispatched job. The scripts live under `tools/sp-provision/`.
 
 ```
-client/operator fills "Intake Briefs" SP list -> cc_intake_autorun.py (cron, */5 * * * *)
-   -> CLARIFY hop: cc-intake-clarify + cc-intake-notify ("Awaiting Sign-off" ping)
-   -> client SignedOff + operator Status=Approved -> cc-intake-notify ("Approved" ping)
-   -> AccessVerified=="Verified" gate (see below) -> cc-intake-watch (JOB + Ready card)
-   -> auto-dispatch delivery-lead (`openclaw agent ... --deliver --channel last`)
+client/operator fills the "Intake Briefs" list -> cc_intake_autorun.py (scheduled)
+   -> CLARIFY hop: cc-intake-clarify + cc-intake-notify ("Awaiting Sign-off")
+   -> client SignedOff + operator Status=Approved -> cc-intake-notify ("Approved")
+   -> AccessVerified == "Verified" gate -> cc-intake-watch (creates JOB + Ready card)
+   -> auto-dispatch the delivery-lead
 ```
 
-What was broken and fixed: (1) no cron ever existed for `cc_intake_autorun.py` specifically — the
-one prior success (JOB0022, 06-11) was a manual run, before the `AccessVerified` gate (added 06-14)
-even existed; (2) `cc-intake-notify` existed but nothing called it — wired in, idempotent via
-`_intake_notify_state.json`; (3) `AccessVerified` for item 6 was set from a real, manually-run check
-(never faked) — the server app-cert has no grant on client tenants, so source-site read access is
-checked **Mac-side** via
-`node tools/cc-visual-qa/cc-sp-capture.mjs <source> --job <id> --probe --state ~/.codecraft/verify-<host>.json`
-(per-host delegated session; `verify-contoso.sharepoint.com.json` covers own-tenant sources);
-(4) `item_web_url()`'s Graph `webUrl` is broken for this list (downloads instead of rendering) — now
-constructs `DispForm.aspx?ID=<id>` directly; (5) the dispatch call was missing `--deliver`, so any
-question the delivery-lead asked (e.g. model profile) never reached any channel — fixed, confirmed
-via a live `deliverySucceeded: true` response.
+Notes on the design:
 
-**⚠️ STILL OPEN — the "Verify" button path is silently broken, cause unconfirmed.** There is a
-SEPARATE, older automated verify system (`cc_verify_bridge.py`, cron `/etc/cron.d/cc-verify-bridge`
-every 3 min, built + "live-proven" 2026-06-14 per [[project_sp_level2_access_model]]) that's
-supposed to do step (3) above automatically: operator clicks "Verify" on the form
-(`VerifyRequested=true`) → bridge enqueues → Mac launchd worker (`cc-verify-watch.mjs`, manually
-loaded per session) captures → bridge reconciles → `AccessVerified=Verified`. Item 6 had
-`VerifyRequested=True` set from creation and matched every enqueue condition in
-`cc_verify_bridge.py` (checked the source — filter is `VerifyRequested truthy AND AccessVerified !=
-Verified AND has SourceSiteURL AND not already queued`), yet was **never enqueued** — no
-`/srv/verify-queue/6.json` ever appeared, `AccessVerified` sat empty (not even "Pending", which the
-enqueue step should have set). The cron IS active (`systemctl is-active cron` = active) and DOES
-process other items (log shows real enqueue/reconcile activity for items 1 and 5) — so this isn't a
-dead cron, something is item-6-specific or timing-specific that wasn't root-caused before this
-session ended. **Before the next real client intake, verify this path actually works** — don't
-assume the manual Mac-probe workaround used for item 6 is the normal path; it was a workaround for
-a bridge that appears to have quietly stopped working for at least this one item.
-
-**Sukaimi's explicit call (2026-07-12): keep auto-dispatch as-is** — JOB creation immediately
-dispatches the delivery-lead; it is NOT operator-gated pending a manual step, despite older
-"operator-gated" wording in the original design doc. That stale wording was corrected everywhere
-(notify message, Kanban card Notes, docstrings).
-
-**Not yet live-fired**: the "Awaiting Sign-off" notify checkpoint (today's test item was already
-Approved when work started) — only code-reviewed + idempotency-tested, not exercised for real.
-
-**One more gap found + fixed same day:** getting a JOB *created* isn't the same as getting it
-*built*. `cc-dispatch-loop-sp` — the supervisor that re-invokes the delivery-lead for each
-subsequent stage (Content Audit → Content Architecture → Wireframes → …) — was disabled a month
-ago (`/etc/cron.d/cc-dispatch-sp` didn't exist; the script itself, `/usr/local/bin/cc-dispatch-loop-sp`,
-was untouched). JOB0026 correctly finished its first card ("do ONE card then STOP" is by design)
-and then sat idle forever with nothing to re-invoke it. Re-enabled per Sukaimi's explicit call
-(`*/5 * * * *`) — the script itself is unchanged and already safe: one card per tick, and it does
-NOT auto-advance past real client gates (content/wireframes/design/staging pause with
-`GATE-PAUSED:`, wait for operator).
-Sukaimi's requested UAT = submit one brand-new form untouched and watch the whole chain fire.
+- The notify hops are idempotent — send state is tracked in a local JSON state file, so a
+  re-run does not re-send a ping.
+- Source-site read access is verified out of band before the gate opens: a delegated capture
+  session probes the source site, and only a real, passing check sets `AccessVerified=Verified`.
+  The provisioning credential is never granted write access on a client tenant.
+- JOB creation dispatches the delivery-lead immediately (not operator-gated). The delivery-lead
+  does one card per tick and pauses at real client gates (content / wireframes / design /
+  staging) with a `GATE-PAUSED:` marker until an operator resumes it.
 
 ---
 
 ## 1. AUDIT the source classic site (DO THIS FIRST — it derives the deliverable)
 
 Run `sp-audit.py <SOURCE_SITE_URL> --job <JOB>`. It resolves the source site id, reads its
-pages + lists via Graph, and writes `/srv/projects/<JOB>/sp-expect.json`. **You build to that
+pages + lists via Graph, and writes `projects/<JOB>/sp-expect.json`. **You build to that
 file** — it is the contract the gate enforces. The audit also emits `enrich.json` beside it
 (broken-link HEAD checks + image natural dimensions, best-effort — never blocks the audit).
 
@@ -288,14 +249,14 @@ canvas back and a faked claim FAILS.
 
 ## 3. REBUILD on the assigned isolated build site (engineer steps, on the VPS)
 
-Run with the openclaw venv and `PYTHONPATH=/root/.openclaw/sp-provision`. Point `SP` at the
+Run with the openclaw venv and `PYTHONPATH=tools/sp-provision`. Point `SP` at the
 **assigned BUILD site** (NOT the Command Center default, NOT the source) via `site.json`:
 
 ```python
 import json
 from spclient import SP
 
-site = json.load(open("/srv/projects/<JOB>/site.json"))      # the assigned BUILD site
+site = json.load(open("projects/<JOB>/site.json"))      # the assigned BUILD site
 sp = SP(site_host="<build-host>.sharepoint.com", site_path="/sites/CCBuild-<JOB>")
 assert sp.site_id() == site["siteId"]    # the gate uses site.json.siteId; they MUST match
 ```
@@ -304,7 +265,7 @@ Then, **driven by `sp-expect.json`** (the source audit output), for each `pages[
 the modern equivalent so every `markers[]` string appears verbatim in that page's `inner_html`:
 
 ```python
-expect = json.load(open("/srv/projects/<JOB>/sp-expect.json"))
+expect = json.load(open("projects/<JOB>/sp-expect.json"))
 for pg in expect["pages"]:
     inner_html = build_modern_html(pg)        # rebuild source content as structured HTML;
                                               # MUST contain every pg["markers"] string verbatim
@@ -349,7 +310,7 @@ add_build_row("<JOB>", {
 ## 6. The 3 verify points (what `cc-verify-sp` proves — agent cannot fake)
 
 The deterministic gate is **`cc-verify-sp <JOB>`** (conversion rail). It reads the
-**source-derived** `/srv/projects/<JOB>/sp-expect.json` (BUILD siteId injected from `site.json`)
+**source-derived** `projects/<JOB>/sp-expect.json` (BUILD siteId injected from `site.json`)
 and asserts, live via Graph against the **BUILD site**:
 
 - **Verify point 1 — Pages exist + published.** Every `pages[].name` (derived from the source)
@@ -362,10 +323,10 @@ and asserts, live via Graph against the **BUILD site**:
 - **(Optional) Migrated lists.** If the audit recorded `lists[]`, each named list must exist on
   the BUILD site (`check_lists`). Skipped when no lists were derived.
 - **Verify point 3 — Visual-QA screenshot.** A real (>5KB) PNG/JPG exists under
-  `/srv/projects/<JOB>/qa/` (from `cc-visual-qa`; for authed SP may be produced Mac-side and
+  `projects/<JOB>/qa/` (from `cc-visual-qa`; for authed SP may be produced Mac-side and
   copied in — the gate only checks the file exists).
 
-PASS → writes `/srv/projects/<JOB>/.sp-verified`, moves the card (Internal QA→Staging, or
+PASS → writes `projects/<JOB>/.sp-verified`, moves the card (Internal QA→Staging, or
 Production→Closed), pings the operator. FAIL → removes the marker, bounces the card to Build
 (BLOCKED on 2nd consecutive fail), pings with reasons. `cc-board` hard-refuses Closed for an SP
 job without `.sp-verified`. Manual dry run: `cc-verify-sp <JOB> --check-only` (exits 0/1).
@@ -415,24 +376,16 @@ Grant-PnPAzureADAppSitePermission `
 Full instructions: `docs/SP_CLIENT_TENANT_GUIDE.md`
 
 **Operator steps:**
-```bash
-# 1. Export built pages to package
-python3 /root/.openclaw/sp-provision/cc_sp_export.py --job JOB####
 
-# 2. Import into client tenant
-python3 /root/.openclaw/sp-provision/cc_sp_import.py \
-  --package /srv/projects/JOB####/sp-export-package/ \
-  --target-site https://<client>.sharepoint.com/sites/<their-site> \
-  --tenant <client-tenant-id>
+> **Not included in this public snapshot.** The client-tenant export/import helpers
+> (`cc_sp_export.py` / `cc_sp_import.py`) that drive the Graph-native package hand-off are not
+> part of this repository. The workflow below is documented for reference only; the tooling that
+> executes it ships separately.
 
-# Dry-run first:
-python3 /root/.openclaw/sp-provision/cc_sp_import.py ... --dry-run
-```
-
-Or via the mirror driver (add `"includeExport": true` to job.config.json):
-```bash
-cc-sp-mirror --config /srv/projects/JOB####/job.config.json --only export
-```
+The export/import flow packages the built pages and their images, then re-uploads them into the
+client's own SharePoint tenant, rewriting build-site image URLs to the client Site Assets along
+the way. The mirror driver (`cc-sp-mirror.py`) can orchestrate the same steps when the export
+helpers are present (add `"includeExport": true` to `job.config.json`).
 
 **What the import does:**
 1. Downloads each image from the build site (using our app cert)
@@ -464,18 +417,18 @@ The audit now captures each page's `images[]` ({src, filename, alt}) from the cl
 
 Run the migrator BEFORE rebuilding pages:
 
-    PYTHONPATH=/root/.openclaw/sp-provision /root/.openclaw/venv/bin/python \
-        /root/.openclaw/sp-provision/image_migrate.py --job <JOB>
+    PYTHONPATH=tools/sp-provision python3 \
+        tools/sp-provision/image_migrate.py --job <JOB>
 
-It downloads each `images[].src` from the source (app READ, SP REST), uploads each to the build site's **Site Assets** library under `Migrated/<JOB>/<filename>`, and writes `/srv/projects/<JOB>/image-map.json` (`_map`: old-src -> new build URL). Idempotent.
+It downloads each `images[].src` from the source (app READ, SP REST), uploads each to the build site's **Site Assets** library under `Migrated/<JOB>/<filename>`, and writes `projects/<JOB>/image-map.json` (`_map`: old-src -> new build URL). Idempotent.
 
 Then, building each page's inner HTML, REWRITE the `<img src>` before create_page:
 
     import json
     from importlib import import_module
     im = import_module("image_migrate")
-    image_map = json.load(open("/srv/projects/<JOB>/image-map.json")).get("_map", {})
-    for pg in json.load(open("/srv/projects/<JOB>/sp-expect.json"))["pages"]:
+    image_map = json.load(open("projects/<JOB>/image-map.json")).get("_map", {})
+    for pg in json.load(open("projects/<JOB>/sp-expect.json"))["pages"]:
         inner_html = build_modern_html(pg)                 # rebuild source content as structured HTML
         inner_html = im.rewrite_img_src(inner_html, image_map)   # point <img> at build assets
         # inner_html MUST contain every pg["markers"] verbatim AND SHOULD show each pg["images"][].filename
@@ -491,15 +444,15 @@ The page REBUILD (sec 3) is now done by **`canvas_compose.py`**, which authors a
 `canvasLayout` (multi-column sections + NATIVE web parts) instead of one stripped text blob. Run it
 AFTER the image migrator, per page:
 
-    PYTHONPATH=/root/.openclaw/sp-provision /root/.openclaw/venv/bin/python \
-        /root/.openclaw/sp-provision/canvas_compose.py --job <JOB> --page Home.aspx
+    PYTHONPATH=tools/sp-provision python3 \
+        tools/sp-provision/canvas_compose.py --job <JOB> --page Home.aspx
 
-It reads `/srv/projects/<JOB>/sp-expect.json` (`content[]` verbatim copy + `images[]`),
+It reads `projects/<JOB>/sp-expect.json` (`content[]` verbatim copy + `images[]`),
 `image-map.json` (migrated URLs), and `site.json` (build site), recreates+publishes the page, and
 self-reports `COPY_COVERAGE` + `STRUCTURE_OK`. Then run the gate: `cc-verify-sp <JOB> --check-only`.
 
 ### Build priority (composer picks automatically)
-1. **`/srv/projects/<JOB>/design-spec.json`** present -> build EXACTLY that (the ux-designer's
+1. **`projects/<JOB>/design-spec.json`** present -> build EXACTLY that (the ux-designer's
    ordered sections/web parts). This is the polished path.
 2. No design-spec -> **heuristic auto-layout** from `content[]` (hero image + main/sidebar + news grid).
 3. Oldest audits with no `content[]` -> legacy marker layout.
@@ -520,8 +473,8 @@ links are carried ENTIRELY in `serverProcessedContent` (searchablePlainTexts=tit
 
 ### VIDEO (judicious -- never automatic; see DESIGN-PLAYBOOK sec 4)
 Only added when a design-spec section requests it (`"video": {"query": "..."}` or `{"url": "..."}`).
-The composer searches the **Pexels VIDEO api** (reuses `PEXELS_API_KEY` from
-`/root/.openclaw/secrets/cc-secrets.env`, same as `cc_assets`), downloads an mp4, uploads it to
+The composer searches the **Pexels VIDEO api** (reuses `PEXELS_API_KEY`, configured via
+environment variables or a secrets manager, same as `cc_assets`), downloads an mp4, uploads it to
 `Documents/Migrated/<JOB>/`, and renders it via File viewer (or Embed). Hero defaults to an image; do
 NOT inject stock video into a faithful conversion.
 

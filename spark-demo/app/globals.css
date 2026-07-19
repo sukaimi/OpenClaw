@@ -33,6 +33,11 @@
   --accent-ruby: #ea2261;
   --accent-cyan: #22d3ee;
 
+  /* Status accents (theme-tracked; used by sandbox status text) */
+  --success: #059669;
+  --success-strong: #047857;
+  --warn: #d97706;
+
   /* Borders */
   --border: #e5edf5;
   --border-strong: #d6d9fc;
@@ -71,6 +76,10 @@
     --primary-hover: #9385ff;
     --brand-dark: #10173a;
 
+    --success: #34d399;
+    --success-strong: #6ee7b7;
+    --warn: #fbbf24;
+
     --grad-from: #7c6cff;
     --grad-mid: #6d8bff;
     --grad-to: #34e0f0;
@@ -99,6 +108,10 @@
   --primary: #7c6cff;
   --primary-hover: #9385ff;
   --brand-dark: #10173a;
+
+  --success: #34d399;
+  --success-strong: #6ee7b7;
+  --warn: #fbbf24;
 
   --grad-from: #7c6cff;
   --grad-mid: #6d8bff;
@@ -136,6 +149,9 @@
   --color-border-strong: var(--border-strong);
   --color-accent-magenta: var(--accent-magenta);
   --color-accent-cyan: var(--accent-cyan);
+  --color-success: var(--success);
+  --color-success-strong: var(--success-strong);
+  --color-warn: var(--warn);
 
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);

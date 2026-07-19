@@ -188,8 +188,8 @@ def main():
     if not children:
         print("\n(no subsites found in payload)")
     print("\n" + "=" * 78)
-    # TODO(JOB0024-109 subsites): live reference needed to finish — nested-web AUTH reach,
-    # target-name collision/provisioning, and parent<->child nav stitching are NOT exercised here.
+    # Documented limitation: nested-web auth reach, target-name collision/provisioning, and
+    # parent<->child nav stitching are not exercised in this snapshot.
 
 
 if __name__ == "__main__":

@@ -84,7 +84,7 @@ export default function StageStepper({
                   {stage.label}
                 </span>
                 {stage.isGate && (
-                  <span className="rounded-[var(--radius-sm)] bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+                  <span className="rounded-[var(--radius-sm)] bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-success">
                     Gate · fail-closed
                   </span>
                 )}
