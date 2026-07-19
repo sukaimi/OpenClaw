@@ -6,7 +6,16 @@ export default function Footer() {
           SPARK v1 — SharePoint Autonomous Rebuild Kit
         </p>
         <p className="[font-feature-settings:'tnum']">
-          &copy; {new Date().getFullYear()} Code &amp; Craft
+          &copy; {new Date().getFullYear()} Code&amp;Craft. A subsidiary of{" "}
+          <a
+            href="https://codeandcanvas.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-heading underline decoration-border underline-offset-2 transition-colors hover:text-primary"
+          >
+            Code&amp;Canvas
+          </a>
+          .
         </p>
       </div>
     </footer>
