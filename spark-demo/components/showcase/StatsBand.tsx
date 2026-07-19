@@ -5,7 +5,7 @@ const stats = [
   { value: String(pipelineData.stages.length), label: "pipeline stages" },
   { value: jobSummary.verdict.copyFidelity, label: "copy fidelity" },
   { value: String(jobSummary.assets.inventoried), label: "assets inventoried" },
-  { value: "100%", label: "autonomous" },
+  { value: "2", label: "human touchpoints" },
 ];
 
 export default function StatsBand() {

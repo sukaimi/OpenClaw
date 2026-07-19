@@ -13,7 +13,7 @@ const copyFidelity = jobSummary.verdict.copyFidelity;
 const cards = [
   {
     title: "Autonomous multi-agent pipeline",
-    body: `${stageCount} stages driven by ${agentCount} specialized agents — from intake to closeout, with no human at the keyboard.`,
+    body: `${stageCount} stages driven by ${agentCount} specialized agents — from intake to closeout, with no human at the keyboard between intake and handover.`,
   },
   {
     title: "Fail-closed verify gate",
@@ -24,8 +24,8 @@ const cards = [
     body: `${auditedAssets} assets audited and classified across ${statusCount} migration statuses — Migrate, Rewrite, Review, and Archive.`,
   },
   {
-    title: "Zero-touch handover",
-    body: "A Teams-native handover report and closeout ping fire automatically the moment the verify gate opens.",
+    title: "Autonomous build, one-tap handover",
+    body: "A Teams-native handover report and closeout ping are generated the moment the verify gate opens — ready for a one-tap human sign-off.",
   },
 ];
 

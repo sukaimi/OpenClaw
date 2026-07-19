@@ -1,15 +1,20 @@
 import Button from "@/components/Button";
 import Hero from "@/components/showcase/Hero";
+import ProblemSection from "@/components/showcase/ProblemSection";
 import BeforeAfterSlider from "@/components/showcase/BeforeAfterSlider";
+import ProofPanel from "@/components/showcase/ProofPanel";
 import PipelineFlow from "@/components/showcase/PipelineFlow";
 import AgentsSection from "@/components/showcase/AgentsSection";
 import KitCards from "@/components/showcase/KitCards";
 import StatsBand from "@/components/showcase/StatsBand";
+import FounderNote from "@/components/showcase/FounderNote";
 
 export default function Home() {
   return (
     <div className="mx-auto max-w-[1080px] px-5">
       <Hero />
+
+      <ProblemSection />
 
       {/* Before / After */}
       <section className="py-8">
@@ -25,10 +30,12 @@ export default function Home() {
           <BeforeAfterSlider
             before="/crestfield/before-home.png"
             after="/crestfield/after-home.png"
-            caption="Crestfield Foods — real classic→modern rebuild."
+            caption="A real SPARK rebuild. The sample org &lsquo;Crestfield Foods&rsquo; is fictional — the classic→modern transformation is exactly what the pipeline produced, reproducible with zero credentials."
           />
         </div>
       </section>
+
+      <ProofPanel />
 
       <PipelineFlow />
 
@@ -37,6 +44,8 @@ export default function Home() {
       <KitCards />
 
       <StatsBand />
+
+      <FounderNote />
 
       {/* Final CTA */}
       <section className="py-24 text-center">

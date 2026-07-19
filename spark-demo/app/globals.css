@@ -28,6 +28,9 @@
   --grad-mid: #6d5bff;
   --grad-to: #22d3ee;
 
+  /* Hero glow strength — stronger in light so the glow reads on white */
+  --hero-glow-opacity: 0.36;
+
   /* Decorative accents */
   --accent-magenta: #f96bee;
   --accent-ruby: #ea2261;
@@ -83,6 +86,8 @@
     --grad-from: #7c6cff;
     --grad-mid: #6d8bff;
     --grad-to: #34e0f0;
+
+    --hero-glow-opacity: 0.2;
 
     --border: rgba(255, 255, 255, 0.1);
     --border-strong: rgba(124, 108, 255, 0.4);
