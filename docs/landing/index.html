@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code&Craft — your website, designed and live within 24 hours</title>
+<meta name="description" content="Tell us what you need. Our team designs, builds and publishes your website — live site and source code — from SGD 10 a page. Delivered within 24 hours.">
+<meta property="og:title" content="Code&Craft — your website, live within 24 hours">
+<meta property="og:description" content="A bespoke website or marketing email, built and delivered within 24 hours. From SGD 10 a page. You keep the code.">
+<meta property="og:type" content="website">
+<style>
+  :root{
+    --cream:#FBF6EF; --card:#FFFFFF; --ink:#2A211B; --muted:#6F6259;
+    --clay:#C96F4C; --clay-dark:#B25C3B; --sage:#7C8C73; --line:#EBE1D6;
+    --shadow:0 6px 24px rgba(60,40,25,.08);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--cream);color:var(--ink);
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:Georgia,"Times New Roman",serif;line-height:1.2;font-weight:700;letter-spacing:-.01em}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 22px}
+  .narrow{max-width:760px}
+  a{color:var(--clay-dark)}
+  .eyebrow{font-family:Georgia,serif;font-style:italic;color:var(--clay);font-size:1.05rem;margin:0 0 14px}
+  /* buttons */
+  .btn{display:inline-block;background:var(--clay);color:#fff;text-decoration:none;font-weight:600;
+    padding:15px 30px;border-radius:40px;font-size:1.05rem;box-shadow:var(--shadow);transition:transform .12s,background .15s}
+  .btn:hover{background:var(--clay-dark);transform:translateY(-1px);color:#fff}
+  .slots{display:block;margin-top:14px;color:var(--muted);font-size:.92rem}
+  .slots b{color:var(--ink)}
+  /* hero */
+  header.hero{padding:64px 0 48px;text-align:center}
+  header.hero h1{font-size:2.7rem;margin:0 0 18px}
+  header.hero p.lede{font-size:1.2rem;color:var(--muted);max-width:620px;margin:0 auto 30px}
+  /* sections */
+  section{padding:54px 0;border-top:1px solid var(--line)}
+  section h2{font-size:1.9rem;text-align:center;margin:0 0 10px}
+  section .sub{text-align:center;color:var(--muted);max-width:560px;margin:0 auto 38px}
+  .grid{display:grid;gap:20px}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(2,1fr)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:var(--shadow)}
+  .card .num{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;
+    background:#F3E7DC;color:var(--clay-dark);font-family:Georgia,serif;font-weight:700;margin-bottom:12px}
+  .card h3{margin:.2rem 0 .4rem;font-size:1.2rem}
+  .card p{margin:0;color:var(--muted)}
+  ul.checks{list-style:none;padding:0;max-width:560px;margin:0 auto;display:grid;gap:14px}
+  ul.checks li{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 20px;padding-left:46px;position:relative}
+  ul.checks li:before{content:"✓";position:absolute;left:18px;color:var(--sage);font-weight:700}
+  /* hero image + picture cards */
+  .hero-img{margin:40px auto 0;max-width:860px}
+  .hero-img img{width:100%;height:auto;max-height:440px;object-fit:cover;border-radius:22px;border:6px solid #fff;box-shadow:var(--shadow);display:block}
+  .card.pic{padding:0;overflow:hidden}
+  .card.pic img{width:100%;height:180px;object-fit:cover;display:block}
+  .card.pic h3{margin:18px 22px 6px}
+  .card.pic p{margin:0 22px 22px}
+  /* pricing */
+  .price-band{background:#F6ECE1;border:1px solid var(--line);border-radius:22px;padding:34px;text-align:center;max-width:680px;margin:0 auto}
+  .price-band .big{font-family:Georgia,serif;font-size:2.4rem;font-weight:700;margin:0}
+  .price-rows{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin:22px 0 8px}
+  .price-rows span{background:#fff;border:1px solid var(--line);border-radius:30px;padding:9px 18px;font-size:.95rem}
+  .note{background:#FFF;border:1px dashed var(--clay);border-radius:18px;padding:24px 26px;max-width:680px;margin:0 auto;color:var(--ink)}
+  .note h3{margin:0 0 8px;color:var(--clay-dark);font-size:1.25rem}
+  .note p{margin:0;color:var(--muted)}
+  /* faq */
+  details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 20px;margin:0 auto 12px;max-width:720px}
+  details summary{cursor:pointer;font-weight:600;padding:14px 0;list-style:none}
+  details summary::-webkit-details-marker{display:none}
+  details summary:after{content:"+";float:right;color:var(--clay);font-weight:700}
+  details[open] summary:after{content:"–"}
+  details p{margin:0 0 16px;color:var(--muted)}
+  .cta-final{text-align:center}
+  .cta-final h2{margin-bottom:18px}
+  footer{border-top:1px solid var(--line);padding:34px 0 110px;text-align:center;color:var(--muted);font-size:.9rem}
+  footer a{color:var(--muted);margin:0 8px}
+  /* sticky mobile cta */
+  .sticky{position:fixed;left:0;right:0;bottom:0;background:rgba(251,246,239,.96);border-top:1px solid var(--line);
+    padding:12px 16px;display:none;text-align:center;backdrop-filter:blur(6px);z-index:20}
+  .sticky .btn{padding:13px 26px;font-size:1rem;width:100%;max-width:420px}
+  @media(max-width:760px){
+    header.hero h1{font-size:2.1rem}
+    .g3,.g4{grid-template-columns:1fr}
+    .sticky{display:block}
+    footer{padding-bottom:120px}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Code&amp;Craft</p>
+    <h1>Your website, designed and<br>live within 24 hours.</h1>
+    <p class="lede">Tell us what you need. Our team designs it, builds it, and hands you the keys —
+      a live site and the source code. From just <b>SGD&nbsp;10 a page</b>.</p>
+    <a class="btn" href="https://tally.so/r/lbzRqX?utm_source=cro">Start your build →</a>
+    <span class="slots" id="slots">Only 10 builds a month · pay per project, no subscription</span>
+    <div class="hero-img"><img src="assets/hero.jpg" alt="A calm, creative workspace"></div>
+  </div>
+</header>
+
+<section id="how">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <p class="sub">Three simple steps. No calls, no quotes, no back-and-forth.</p>
+    <div class="grid g3">
+      <div class="card"><span class="num">1</span><h3>Tell us</h3><p>Fill a 2-minute form — what you need, how many pages, your brand, your words, a picture if you have one, and <b>the email where we'll send your build</b> (double-check it!).</p></div>
+      <div class="card"><span class="num">2</span><h3>Pay</h3><p>SGD&nbsp;10 per page, securely via Stripe — only when you're ready. No subscription.</p></div>
+      <div class="card"><span class="num">3</span><h3>Go live</h3><p>We design, build and publish it. You receive a live link and the full source code by email — within 24 hours.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="get">
+  <div class="wrap">
+    <h2>What you get</h2>
+    <p class="sub">A finished, ready-to-use build — that's genuinely yours.</p>
+    <ul class="checks">
+      <li>A <b>bespoke design</b> made for your brand — never a template.</li>
+      <li><b>Real imagery</b> — your photos, plus beautiful curated stock.</li>
+      <li>A <b>live, hosted website</b> — or a polished, ready-to-send marketing email.</li>
+      <li>The <b>full source code</b>, yours to keep and host anywhere.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <h2>Simple, honest pricing</h2>
+    <p class="sub">No subscriptions. No hidden fees. You own everything.</p>
+    <div class="price-band">
+      <p class="big">SGD&nbsp;10 <span style="font-size:1.1rem;color:var(--muted)">/ page</span></p>
+      <div class="price-rows">
+        <span>1-page landing — <b>SGD&nbsp;10</b></span>
+        <span>3-page website — <b>SGD&nbsp;30</b></span>
+        <span>Marketing email (EDM) — <b>SGD&nbsp;10</b></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="early">
+  <div class="wrap">
+    <div class="note">
+      <h3>An AI team, guided by human engineers</h3>
+      <p>Your project is built by our AI design-and-build team, working alongside human engineers who
+        maintain the system and keep making it better. That's our ethos: <b>AI shouldn't replace people —
+        it should empower them</b>. We're still early, so for now builds ship as-is (no revision rounds
+        just yet) — which is exactly why the soft-launch price is this low. You get a complete,
+        ready-to-use build, and the full source code is yours to take anywhere.</p>
+    </div>
+  </div>
+</section>
+
+<section id="why">
+  <div class="wrap">
+    <h2>Why Code&amp;Craft</h2>
+    <div class="grid g3">
+      <div class="card"><h3>Fast</h3><p>Designed, built and delivered within 24 hours.</p></div>
+      <div class="card"><h3>Affordable</h3><p>SGD&nbsp;10 a page — pay only for what you need.</p></div>
+      <div class="card"><h3>Yours to keep</h3><p>You get the full source code, no lock-in.</p></div>
+      <div class="card"><h3>Quality-checked</h3><p>Every build is reviewed before it reaches you.</p></div>
+      <div class="card"><h3>Personal</h3><p>We cap at 10 builds a month so every one gets care.</p></div>
+      <div class="card"><h3>No commitment</h3><p>One project at a time. No retainer, no subscription.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="what">
+  <div class="wrap">
+    <h2>What we build</h2>
+    <p class="sub">Pick what fits — perfect for small businesses, launches, events and portfolios.</p>
+    <div class="grid g3">
+      <div class="card pic"><img src="assets/web.jpg" alt="Multi-page website"><h3>Multi-page websites</h3><p>Home, about, services, contact — a few pages designed around your brand.</p></div>
+      <div class="card pic"><img src="assets/mobile.jpg" alt="Single-page site"><h3>Single-page sites &amp; landers</h3><p>One sharp, scroll-friendly page that gets your message across.</p></div>
+      <div class="card pic"><img src="assets/email.jpg" alt="Marketing email"><h3>Marketing emails (EDMs)</h3><p>A polished, ready-to-send email design for your next campaign.</p></div>
+    </div>
+    <p style="color:var(--muted);text-align:center;margin-top:26px"><em>Static sites — no logins, databases or checkouts — which is what keeps them fast and affordable.</em></p>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <h2>Questions</h2>
+    <p class="sub">The honest answers.</p>
+    <details><summary>How fast is it really?</summary><p>Within 24 hours of payment — often sooner.</p></details>
+    <details><summary>What do I need to give you?</summary><p>Your brand name, a little copy (or tell us the gist), how many pages you want, and an image if you have one. That's it.</p></details>
+    <details><summary>Do I own what you make?</summary><p>Yes. You receive the full source code and can host it anywhere — no lock-in.</p></details>
+    <details><summary>Can I ask for changes?</summary><p>Not yet — we're in early access, so builds are delivered as-is with no revision rounds. This is exactly why the price is so low. We'll fix genuine errors, of course.</p></details>
+    <details><summary>What does "static" mean?</summary><p>Beautiful, informational sites and emails — no user logins, databases or e-commerce checkouts. It keeps your build fast, secure and cheap.</p></details>
+    <details><summary>How do I pay?</summary><p>Securely via Stripe, right after you submit the form. SGD&nbsp;10 per page.</p></details>
+    <details><summary>I think I entered the wrong email — what now?</summary><p>No problem. Email <a href="mailto:hello@codeandcraft.ai">hello@codeandcraft.ai</a> with your name and the correct address and we'll make sure your build reaches you. Your email is where we send everything, so it's worth getting right.</p></details>
+  </div>
+</section>
+
+<section class="cta-final">
+  <div class="wrap">
+    <h2>Ready when you are.</h2>
+    <a class="btn" href="https://tally.so/r/lbzRqX?utm_source=cro">Start your build →</a>
+    <span class="slots" id="slots2">Only 10 builds a month</span>
+    <p style="margin-top:22px;color:var(--muted)">Questions, or entered the wrong details? Email
+      <a href="mailto:hello@codeandcraft.ai">hello@codeandcraft.ai</a> — we're happy to help.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Code&amp;Craft is a service by <b>Code&amp;Canvas PTE LTD</b> · Singapore<br>
+    <a href="mailto:hello@codeandcraft.ai">hello@codeandcraft.ai</a> ·
+    <a href="https://teams.codeandcraft.ai/legal/terms.html">Terms</a> ·
+    <a href="https://teams.codeandcraft.ai/legal/privacy.html">Privacy</a>
+  </div>
+</footer>
+
+<div class="sticky"><a class="btn" href="https://tally.so/r/lbzRqX?utm_source=cro">Start your build →</a></div>
+
+<script>
+  // Live monthly availability (published with CORS at teams.codeandcraft.ai/availability.json)
+  fetch("https://teams.codeandcraft.ai/availability.json").then(function(r){return r.json()}).then(function(d){
+    var open = d.status === "open" && d.slotsLeft > 0;
+    var msg = open
+      ? ("Only " + d.limit + " builds a month · <b>" + d.slotsLeft + " slot" + (d.slotsLeft===1?"":"s") + " left this month</b> · pay per project")
+      : ("<b>Fully booked this month</b> · submit to join next month's queue");
+    var a = document.getElementById("slots"); if(a) a.innerHTML = msg;
+    var b = document.getElementById("slots2"); if(b) b.innerHTML = msg;
+    if(!open){ document.querySelectorAll("a.btn").forEach(function(el){ el.textContent = "Join the waitlist →"; }); }
+  }).catch(function(){});
+</script>
+</body>
+</html>
