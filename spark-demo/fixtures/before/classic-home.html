@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Home - Crestfield Foods Intranet</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: "Segoe UI", "Segoe UI Web (West European)", Tahoma, Arial, sans-serif;
+    font-size: 13px;
+    color: #444;
+    background: #ffffff;
+  }
+  a { color: #0072c6; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ===== Suite bar (top) ===== */
+  .suitebar {
+    height: 30px;
+    background: #262626;
+    background: linear-gradient(#3a3a3a, #262626);
+    color: #dcdcdc;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .suitebar .sp-brand {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 15px;
+    margin-right: 24px;
+    letter-spacing: .2px;
+  }
+  .suitebar .suite-links a {
+    color: #d0d0d0;
+    margin-right: 18px;
+    font-size: 12px;
+  }
+  .suitebar .suite-links a:hover { color:#fff; text-decoration:none; }
+  .suitebar .suite-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .suitebar .gear, .suitebar .glyph {
+    color: #d0d0d0;
+    font-size: 15px;
+    cursor: default;
+  }
+  .suitebar .user {
+    color: #ffffff;
+    font-size: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .suitebar .avatar {
+    width: 18px; height: 18px; border-radius: 2px;
+    background: #7a7a7a; display:inline-block;
+  }
+
+  /* ===== Site title / branding row ===== */
+  .titlerow {
+    display: flex;
+    align-items: center;
+    padding: 14px 18px 0 18px;
+    background: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .site-logo {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg,#0a7d3f,#0f9e50);
+    color:#fff; font-weight:700; font-size:11px;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    line-height:1.1;
+    border:1px solid #0a5c30;
+    margin-right: 12px;
+  }
+  .site-title { line-height: 1.1; }
+  .site-title .st-main {
+    font-size: 22px; color:#444; font-weight: 400;
+  }
+  .site-title .st-tag {
+    font-size: 12px; color:#888; font-style: italic; margin-top:2px;
+  }
+  .title-search {
+    margin-left: auto;
+    display: flex; align-items: stretch;
+    height: 26px;
+    margin-bottom: 10px;
+  }
+  .title-search input {
+    width: 200px; height: 26px;
+    border: 1px solid #c6c6c6;
+    border-right: none;
+    padding: 0 8px;
+    font-size: 12px;
+    color:#666;
+    outline: none;
+  }
+  .title-search .sbtn {
+    width: 30px; height: 26px;
+    border: 1px solid #c6c6c6;
+    background: linear-gradient(#fdfdfd,#eaeaea);
+    color:#0072c6; font-size: 13px;
+    display:flex; align-items:center; justify-content:center;
+    cursor: default;
+  }
+
+  /* ===== Top horizontal nav (tabs) ===== */
+  .topnav {
+    background: linear-gradient(#f7f7f7,#ececec);
+    border-bottom: 1px solid #d0d0d0;
+    padding: 0 18px;
+    display: flex;
+  }
+  .topnav a {
+    display: inline-block;
+    padding: 7px 16px 6px 16px;
+    font-size: 13px;
+    color: #0072c6;
+    border-right: 1px solid #dcdcdc;
+  }
+  .topnav a:first-child { border-left: 1px solid #dcdcdc; }
+  .topnav a.active {
+    background: #ffffff;
+    color: #444;
+    font-weight: 600;
+    border-bottom: 2px solid #0072c6;
+    margin-bottom: -1px;
+  }
+  .topnav a:hover { background:#fdfdfd; text-decoration:none; }
+
+  /* ===== Layout ===== */
+  .layout {
+    display: flex;
+    align-items: flex-start;
+  }
+  .quicklaunch {
+    width: 180px;
+    flex: 0 0 180px;
+    background: #ffffff;
+    border-right: 1px solid #e6e6e6;
+    padding: 16px 0 40px 0;
+    min-height: 780px;
+  }
+  .ql-group { margin-bottom: 4px; }
+  .ql-head {
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    padding: 6px 14px 6px 16px;
+  }
+  .ql-group a {
+    display: block;
+    font-size: 12px;
+    color: #0072c6;
+    padding: 4px 14px 4px 26px;
+  }
+  .ql-group a:hover { background:#f0f6fb; }
+  .ql-sep { border-top:1px solid #ededed; margin: 8px 12px; }
+
+  .content {
+    flex: 1 1 auto;
+    padding: 14px 18px 40px 18px;
+    min-width: 0;
+  }
+  .zones { display: flex; gap: 16px; align-items: flex-start; }
+  .zone-main { flex: 1 1 auto; min-width: 0; }
+  .zone-side { flex: 0 0 300px; }
+
+  /* ===== Web part chrome ===== */
+  .wp {
+    border: 1px solid #d5d5d5;
+    background: #ffffff;
+    margin-bottom: 16px;
+  }
+  .wp-title {
+    background: linear-gradient(#dcecf8,#c6ddf0);
+    border-bottom: 1px solid #b7d0e6;
+    color: #0a558c;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 5px 10px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .wp-title .wp-menu { color:#7fa9cc; font-size:12px; cursor:default; }
+  .wp-body { padding: 8px 10px; }
+
+  /* Hero rotating placeholder */
+  .hero {
+    position: relative;
+    height: 240px;
+    background:
+      linear-gradient(135deg,#d9d9d9 0%, #c4c4c4 100%);
+    border-bottom: 1px solid #b7d0e6;
+    display:flex; align-items:center; justify-content:center;
+    overflow: hidden;
+  }
+  .hero .imgicon {
+    color:#9a9a9a; font-size: 60px; opacity:.7;
+  }
+  .hero .hero-caption {
+    position:absolute; left:0; bottom:0; right:0;
+    background: rgba(0,0,0,.55);
+    color:#fff; padding: 10px 14px;
+  }
+  .hero .hero-caption .hc-title { font-size: 16px; font-weight:600; }
+  .hero .hero-caption .hc-sub { font-size:12px; color:#e2e2e2; margin-top:2px; }
+  .hero .arrow {
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:32px; height:44px; background: rgba(0,0,0,.35); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:20px; cursor:default;
+  }
+  .hero .arrow.left { left:0; } .hero .arrow.right { right:0; }
+  .hero .dots { position:absolute; bottom:6px; right:12px; display:flex; gap:6px; z-index:2;}
+  .hero .dots span { width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,.5); }
+  .hero .dots span.on { background:#fff; }
+
+  /* Announcements / Documents tables */
+  table.spgrid { width:100%; border-collapse: collapse; font-size:12px; }
+  table.spgrid thead th {
+    text-align:left;
+    background: linear-gradient(#f6f6f6,#ececec);
+    border-bottom: 1px solid #cfcfcf;
+    color:#666; font-weight:600;
+    padding: 5px 8px;
+  }
+  table.spgrid td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #ededed;
+    vertical-align: top;
+  }
+  table.spgrid tr:hover td { background:#f3f8fc; }
+  .new-badge {
+    color:#d13438; font-weight:700; font-size:10px; margin-left:5px;
+    vertical-align: top;
+  }
+  .doc-ico { color:#0072c6; margin-right:6px; }
+  .muted { color:#888; }
+
+  /* Quick links list */
+  ul.qllist { list-style:none; margin:0; padding:0; }
+  ul.qllist li {
+    padding: 5px 4px;
+    border-bottom: 1px dotted #e2e2e2;
+    display:flex; align-items:center;
+  }
+  ul.qllist li:last-child { border-bottom:none; }
+  ul.qllist li .bullet { color:#0072c6; margin-right:7px; font-size:11px; }
+
+  /* Events list */
+  .event { display:flex; gap:10px; padding: 7px 2px; border-bottom:1px solid #ededed; }
+  .event:last-child { border-bottom:none; }
+  .event .date {
+    flex:0 0 44px; text-align:center;
+    border:1px solid #d5d5d5; background:#fafafa;
+  }
+  .event .date .m { background:#0072c6; color:#fff; font-size:10px; padding:2px 0; text-transform:uppercase; }
+  .event .date .d { font-size:17px; color:#444; padding:2px 0; font-weight:600; }
+  .event .ev-body .ev-title { font-size:12px; color:#0072c6; }
+  .event .ev-body .ev-meta { font-size:11px; color:#999; margin-top:2px; }
+
+  /* Footer */
+  .sitefooter {
+    border-top: 1px solid #e0e0e0;
+    background:#f7f7f7;
+    color:#999; font-size:11px;
+    padding: 10px 18px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .foot-logo {
+    width:20px;height:20px;background:linear-gradient(135deg,#0a7d3f,#0f9e50);
+    display:inline-block; border:1px solid #0a5c30;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Suite bar -->
+  <div class="suitebar">
+    <span class="sp-brand">SharePoint</span>
+    <span class="suite-links">
+      <a href="#">Newsfeed</a>
+      <a href="#">OneDrive</a>
+      <a href="#">Sites</a>
+    </span>
+    <span class="suite-right">
+      <span class="glyph" title="Focus on Content">&#9744;</span>
+      <span class="glyph" title="Share">&#128100;</span>
+      <span class="gear" title="Settings">&#9881;</span>
+      <span class="glyph" title="Help">?</span>
+      <span class="user"><span class="avatar"></span>Sandra Okafor &#9662;</span>
+    </span>
+  </div>
+
+  <!-- Site title -->
+  <div class="titlerow">
+    <div class="site-logo">CF<br>FOODS</div>
+    <div class="site-title">
+      <div class="st-main">Crestfield Foods Intranet</div>
+      <div class="st-tag">Good Food, Every Day</div>
+    </div>
+    <div class="title-search">
+      <input type="text" placeholder="Search this site&hellip;">
+      <div class="sbtn">&#128269;</div>
+    </div>
+  </div>
+
+  <!-- Top nav -->
+  <div class="topnav">
+    <a href="#" class="active">Home</a>
+    <a href="#">About</a>
+    <a href="#">Departments</a>
+    <a href="#">News</a>
+    <a href="#">Resources</a>
+  </div>
+
+  <!-- Layout -->
+  <div class="layout">
+
+    <!-- Quick Launch -->
+    <nav class="quicklaunch">
+      <div class="ql-group">
+        <a href="#" style="font-weight:600;color:#444;">Home</a>
+        <a href="#">Documents</a>
+        <a href="#">Site Contents</a>
+      </div>
+      <div class="ql-sep"></div>
+      <div class="ql-head">Recent</div>
+      <div class="ql-group">
+        <a href="#">Global Sales Conference 2026</a>
+        <a href="#">2030 Commitment Report</a>
+        <a href="#">APAC Q1 Marketing Dashboard</a>
+      </div>
+      <div class="ql-sep"></div>
+      <div class="ql-head">Departments</div>
+      <div class="ql-group">
+        <a href="#">Employee Center</a>
+        <a href="#">APAC Regional Hub</a>
+        <a href="#">Global Policy Center</a>
+        <a href="#">Procurement</a>
+        <a href="#">HR &amp; Benefits</a>
+        <a href="#">IT Service Desk</a>
+      </div>
+      <div class="ql-sep"></div>
+      <div class="ql-head">Brand Spaces</div>
+      <div class="ql-group">
+        <a href="#">Veldt Chocolate</a>
+        <a href="#">Solara Snacks</a>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <div class="content">
+      <div class="zones">
+
+        <!-- MAIN ZONE -->
+        <div class="zone-main">
+
+          <!-- Hero rotating web part -->
+          <div class="wp">
+            <div class="hero">
+              <div class="arrow left">&#8249;</div>
+              <div class="imgicon">&#128247;</div>
+              <div class="arrow right">&#8250;</div>
+              <div class="hero-caption">
+                <div class="hc-title">Our 2030 Commitment</div>
+                <div class="hc-sub">100% recyclable packaging by 2030. See the roadmap and progress dashboard &nbsp;|&nbsp; Read Report &rarr;</div>
+              </div>
+              <div class="dots"><span class="on"></span><span></span><span></span></div>
+            </div>
+          </div>
+
+          <!-- Announcements web part -->
+          <div class="wp">
+            <div class="wp-title"><span>Announcements</span><span class="wp-menu">&#9662;</span></div>
+            <div class="wp-body" style="padding:0;">
+              <table class="spgrid">
+                <thead>
+                  <tr><th style="width:60%;">Title</th><th>Posted</th><th>By</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><a href="#">Veldt Chocolate Launches New Spring Campaign</a><span class="new-badge">! new</span></td>
+                    <td class="muted">3/12/2026</td><td class="muted">Comms Team</td>
+                  </tr>
+                  <tr>
+                    <td><a href="#">Solara Snacks SEA Distribution Partnership Announced</a></td>
+                    <td class="muted">3/06/2026</td><td class="muted">Wei Chen</td>
+                  </tr>
+                  <tr>
+                    <td><a href="#">APAC Q1 Marketing Dashboard Now Available</a></td>
+                    <td class="muted">2/24/2026</td><td class="muted">APAC Marketing</td>
+                  </tr>
+                  <tr>
+                    <td><a href="#">Global Sales Conference 2026 &mdash; Registration Open</a></td>
+                    <td class="muted">2/17/2026</td><td class="muted">Events Office</td>
+                  </tr>
+                  <tr>
+                    <td><a href="#">Reminder: Code of Conduct 2026 Acknowledgement Due</a></td>
+                    <td class="muted">2/09/2026</td><td class="muted">Compliance</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Documents library web part -->
+          <div class="wp">
+            <div class="wp-title"><span>Documents</span><span class="wp-menu">&#9662;</span></div>
+            <div class="wp-body" style="padding:0;">
+              <table class="spgrid">
+                <thead>
+                  <tr>
+                    <th style="width:52%;">Name</th>
+                    <th>Modified</th>
+                    <th>Modified By</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td><span class="doc-ico">&#128196;</span><a href="#">Global Employee Handbook 2026</a></td><td class="muted">1/22/2026</td><td class="muted">HR Services</td></tr>
+                  <tr><td><span class="doc-ico">&#128196;</span><a href="#">Benefits Guide APAC 2026</a></td><td class="muted">1/18/2026</td><td class="muted">HR Services</td></tr>
+                  <tr><td><span class="doc-ico">&#128196;</span><a href="#">Code of Conduct 2026</a></td><td class="muted">1/12/2026</td><td class="muted">Compliance</td></tr>
+                  <tr><td><span class="doc-ico">&#128196;</span><a href="#">Data Privacy Policy</a></td><td class="muted">12/04/2025</td><td class="muted">Legal</td></tr>
+                  <tr><td><span class="doc-ico">&#128196;</span><a href="#">Expense Report Template v4</a></td><td class="muted">11/28/2025</td><td class="muted">Finance</td></tr>
+                  <tr><td><span class="doc-ico">&#128196;</span><a href="#">Leave Request Form</a></td><td class="muted">11/15/2025</td><td class="muted">HR Services</td></tr>
+                  <tr><td><span class="doc-ico">&#128196;</span><a href="#">IT Acceptable Use Policy</a></td><td class="muted">6/30/2023</td><td class="muted">IT Governance</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div><!-- /zone-main -->
+
+        <!-- SIDE ZONE -->
+        <div class="zone-side">
+
+          <!-- Quick Links web part -->
+          <div class="wp">
+            <div class="wp-title"><span>Quick Links</span><span class="wp-menu">&#9662;</span></div>
+            <div class="wp-body">
+              <ul class="qllist">
+                <li><span class="bullet">&#9642;</span><a href="#">Employee Center</a></li>
+                <li><span class="bullet">&#9642;</span><a href="#">Travel &amp; Expense (T&amp;E)</a></li>
+                <li><span class="bullet">&#9642;</span><a href="#">Technology Center</a></li>
+                <li><span class="bullet">&#9642;</span><a href="#">Compliance Line</a></li>
+                <li><span class="bullet">&#9642;</span><a href="#">Buyers Portal</a></li>
+                <li><span class="bullet">&#9642;</span><a href="#">Global Supplier Hub</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Upcoming events web part -->
+          <div class="wp">
+            <div class="wp-title"><span>Upcoming Events</span><span class="wp-menu">&#9662;</span></div>
+            <div class="wp-body" style="padding:6px 8px;">
+              <div class="event">
+                <div class="date"><div class="m">Mar</div><div class="d">01</div></div>
+                <div class="ev-body"><div class="ev-title"><a href="#">APAC Q1 Kick-off Town Hall</a></div><div class="ev-meta">9:00 AM &middot; Singapore HQ</div></div>
+              </div>
+              <div class="event">
+                <div class="date"><div class="m">Mar</div><div class="d">14</div></div>
+                <div class="ev-body"><div class="ev-title"><a href="#">International Women's Day APAC</a></div><div class="ev-meta">All day &middot; All regions</div></div>
+              </div>
+              <div class="event">
+                <div class="date"><div class="m">Mar</div><div class="d">27</div></div>
+                <div class="ev-body"><div class="ev-title"><a href="#">Solara Snacks SEA Campaign Launch</a></div><div class="ev-meta">2:00 PM &middot; Bangkok</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sub-brands note web part -->
+          <div class="wp">
+            <div class="wp-title"><span>Our Brands</span><span class="wp-menu">&#9662;</span></div>
+            <div class="wp-body">
+              <p style="margin:4px 0;"><a href="#">Veldt Chocolate</a> &mdash; premium confectionery.</p>
+              <p style="margin:4px 0;"><a href="#">Solara Snacks</a> &mdash; better-for-you snacking, SEA.</p>
+            </div>
+          </div>
+
+        </div><!-- /zone-side -->
+
+      </div>
+    </div><!-- /content -->
+  </div><!-- /layout -->
+
+  <!-- Footer -->
+  <div class="sitefooter">
+    <span class="foot-logo"></span>
+    <span>&copy; 2026 Crestfield Foods International &nbsp;&mdash;&nbsp; Good Food, Every Day &nbsp;|&nbsp; Contact IT Service Desk &nbsp;|&nbsp; Site Settings</span>
+  </div>
+
+</body>
+</html>
