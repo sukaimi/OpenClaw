@@ -6,62 +6,54 @@ export type Agent = {
 
 export const agents: Agent[] = [
   {
-    role: "Intake Clerk",
+    role: "Delivery Lead",
     profile:
-      "Opens the job, parses the client request, and locks the run scope.",
+      "Single entry point and orchestrator. Decomposes the job, sequences the team, runs the client gates, and delivers. The only seat that spawns other agents.",
   },
   {
-    role: "Gatekeeper",
+    role: "Product Manager",
     profile:
-      "Verifies read access to the source and write access to the target before anything runs.",
+      "Turns the request into a testable spec and runs the content audit, producing the migration tracker. Defines what and why, never how.",
   },
   {
-    role: "Scout",
+    role: "Architect",
     profile:
-      "Crawls the classic site and snapshots every page, zone, and asset.",
+      "Owns content architecture and technical design. Decides how it gets built — boring and proven over clever.",
   },
   {
-    role: "Auditor",
+    role: "UX Designer",
     profile:
-      "Classifies every asset, flags broken links and low-res images, logs pain-points.",
+      "Wireframes, then hi-fi designs as hosted, commentable previews. SharePoint-honest layouts only — nothing the platform can't actually render.",
   },
   {
-    role: "Strategist",
+    role: "SharePoint Engineer",
     profile:
-      "Scores pages by reach and freshness, then tiers them so the important ones rebuild first.",
+      "Rebuilds pages and the homepage as modern native web parts via Microsoft Graph. Supervises the coding engine and owns the tests.",
   },
   {
-    role: "Liaison",
-    profile: "Posts the tiered plan to Teams and waits for the operator's go-ahead.",
-  },
-  {
-    role: "Image Handler",
+    role: "Code Reviewer",
     profile:
-      "Migrates usable images and flags low-res ones for rewrite or SVG swap.",
+      "Blocking internal quality gate. Reviews against the diff and returns approve or block — never a maybe.",
   },
   {
-    role: "Builder",
+    role: "QA Engineer",
     profile:
-      "Rebuilds interior pages and the homepage as modern web parts via Microsoft Graph.",
-  },
-  {
-    role: "Stylist",
-    profile: "Applies the theme, fonts, wallpaper, and brand voice.",
-  },
-  {
-    role: "Inspector",
-    profile:
-      "The fail-closed gate: diffs built pages against source and demands copy fidelity 1.00. No agent can self-approve.",
+      "The fail-closed gate: diffs every built page against the captured source and demands copy fidelity. No agent can self-approve.",
     special: true,
   },
   {
-    role: "Registrar",
+    role: "Security & Governance",
     profile:
-      "Stamps final migration status and exports the 3-sheet tracker workbook.",
+      "Always-on gate across the whole run: M365 permissions, data governance, PDPA, and pre-ship package security.",
   },
   {
-    role: "Closer",
+    role: "DevOps Deploy",
     profile:
-      "Delivers the handover report, pings the operator, and closes the job.",
+      "Packages, deploys, and rolls back. Staging first, production only after sign-off. Reversible-first, least-privilege.",
+  },
+  {
+    role: "Technical Writer",
+    profile:
+      "Turns the shipped site into runbooks, governance docs, and user guides — documenting what actually shipped, verified live.",
   },
 ];
