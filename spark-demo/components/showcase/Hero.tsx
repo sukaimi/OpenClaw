@@ -19,7 +19,7 @@ export default function Hero() {
           </span>
 
           <h1 className="mx-auto mt-8 max-w-[640px] text-[clamp(2.25rem,5.5vw,3.5rem)] font-light leading-[1.05] tracking-[-0.03em] text-heading lg:mx-0">
-            Twelve AI agents rebuild your classic SharePoint —{" "}
+            Ten AI agents rebuild your classic SharePoint —{" "}
             <span className="spark-gradient-text">start to finish.</span>
           </h1>
 

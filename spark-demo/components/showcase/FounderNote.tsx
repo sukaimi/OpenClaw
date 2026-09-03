@@ -29,14 +29,14 @@ export default function FounderNote() {
               </div>
 
               <h2 className="mt-3 text-[clamp(1.6rem,3.5vw,2.25rem)] font-light leading-[1.1] tracking-[-0.02em] text-heading">
-                One founder. Twelve agents.
+                One founder. Ten agents.
               </h2>
 
               <p className="mt-4 text-[17px] leading-[1.6] text-body">
-                SPARK — the entire twelve-agent engine and this site — was
+                SPARK — the entire ten-agent engine and this site — was
                 designed and built end-to-end by one person:{" "}
                 <span className="font-normal text-heading">Sukaimi Sukri</span>.
-                No team, no agency. One founder orchestrating twelve agents that
+                No team, no agency. One founder orchestrating ten agents that
                 do the rebuild.
               </p>
 

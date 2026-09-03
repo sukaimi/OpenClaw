@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const alt =
-  "SPARK v1 — twelve AI agents rebuild your classic SharePoint";
+  "SPARK v1 — ten AI agents rebuild your classic SharePoint";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -80,7 +80,7 @@ export default function OpengraphImage() {
               maxWidth: "1000px",
             }}
           >
-            Twelve AI agents rebuild your classic SharePoint.
+            Ten AI agents rebuild your classic SharePoint.
           </div>
           <div
             style={{
