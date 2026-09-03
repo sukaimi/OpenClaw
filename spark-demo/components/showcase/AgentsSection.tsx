@@ -36,12 +36,12 @@ export default function AgentsSection() {
           The agents
         </p>
         <h2 className="mt-3 text-[clamp(1.75rem,4vw,2.5rem)] font-light leading-[1.1] tracking-[-0.02em] text-heading">
-          Twelve specialists, one assembly line
+          Ten specialists, one assembly line
         </h2>
         <p className="mt-4 text-[16px] leading-[1.5] text-body">
-          Twelve agents across thirteen stages — the Builder runs two. Every
-          stage has a dedicated owner, and no agent can self-approve its own
-          work.
+          Ten agents across thirteen stages — the SharePoint Engineer owns
+          three, and the Code Reviewer gates every build. Every stage has a
+          dedicated owner, and no agent can self-approve its own work.
         </p>
       </div>
 

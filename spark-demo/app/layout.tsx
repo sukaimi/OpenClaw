@@ -47,7 +47,7 @@ export const metadata: Metadata = {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "SPARK v1 — twelve AI agents rebuild your classic SharePoint",
+        alt: "SPARK v1 — ten AI agents rebuild your classic SharePoint",
       },
     ],
   },

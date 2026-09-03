@@ -50,6 +50,26 @@ intake brief and signing off at handover. Everything between is autonomous.
 | 12 | **Content Tracker** | A multi-sheet `content-tracker.xlsx` is generated (pages sorted by tier and priority) as the migration record of what moved and its status. |
 | 13 | **Handover & Closeout** | A handover summary is produced, the client is notified, artifacts are archived, and the job card is closed. |
 
+### The agents
+
+Ten specialized agents run the pipeline on the OpenClaw multi-agent platform. Each is a
+separate agent workspace with its own role, and only one of them can pass a page.
+
+| Agent | Role |
+|-------|------|
+| **Delivery Lead** | Orchestrator. Decomposes the job, sequences the team, runs the client gates, delivers. The only seat that spawns other agents. |
+| **Product Manager** | Turns the brief into a testable spec; runs the content audit and owns the migration tracker. |
+| **Architect** | Content architecture and technical design; scores and tiers pages so the most valuable are rebuilt first. |
+| **UX Designer** | Wireframes and the `design-spec` the composer builds 1:1; SharePoint-honest layouts only. |
+| **SharePoint Engineer** | Captures the classic site and rebuilds pages and the homepage as native modern web parts via Microsoft Graph. |
+| **Code Reviewer** | Blocking internal review on every build — approve or block, never a maybe. |
+| **QA Engineer** | The fail-closed verify gate: diffs every built page against the captured source and demands copy fidelity 1.00. |
+| **Security & Governance** | Always-on gate: M365 permissions, source read-only, writes confined to the build site. |
+| **DevOps Deploy** | Asset migration and deployment; staging first, reversible-first, least-privilege. |
+| **Technical Writer** | Handover report, runbooks and user guides — documenting what actually shipped. |
+
+All agents run on DeepSeek V4 in production.
+
 ### Why the gate matters
 
 Autonomous agents are prone to declaring victory. SPARK removes that failure mode by making
